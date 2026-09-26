@@ -1,0 +1,359 @@
+/**
+ * GM ARCH TOOLS — 13 Platform Modules & Breadcrumb Stylesheet
+ * Architectural, clean, technical, modular hierarchy
+ */
+
+/* ==============================================================
+   BREADCRUMBS NAVIGATION BAR
+   ============================================================== */
+.breadcrumbs-bar {
+  background: rgba(13, 19, 28, 0.95);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 8px 24px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.breadcrumbs-container {
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+}
+
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  text-decoration: none;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.breadcrumb-item:hover {
+  color: var(--cyan-accent);
+}
+
+.breadcrumb-item.active {
+  color: #ffffff;
+  font-weight: 700;
+  cursor: default;
+}
+
+.breadcrumb-separator {
+  color: var(--text-faint);
+  font-size: 10px;
+  user-select: none;
+}
+
+/* ==============================================================
+   PLATFORM HUB HERO & VIEW CONTAINER
+   ============================================================== */
+.platform-hub-hero {
+  margin-bottom: 36px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 24px;
+}
+
+.platform-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  color: var(--cyan-accent);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.platform-title {
+  font-size: clamp(28px, 4.5vw, 44px);
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+  line-height: 1.15;
+}
+
+.platform-subtitle {
+  font-size: 15px;
+  color: var(--text-muted);
+  max-width: 780px;
+  line-height: 1.55;
+}
+
+/* ==============================================================
+   13-MODULES GRID
+   ============================================================== */
+.modules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.module-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition-fast);
+}
+
+.module-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.6);
+  border-color: var(--border-active);
+  background: var(--bg-card-hover);
+}
+
+/* Active Module Highlight (01 Arch Calculatives) */
+.module-card.active-module {
+  border-color: rgba(56, 189, 248, 0.4);
+  background: linear-gradient(145deg, #111a28 0%, #152233 100%);
+}
+
+.module-card.active-module::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #0284c7, #38bdf8);
+}
+
+.module-card.active-module:hover {
+  border-color: var(--cyan-accent);
+  box-shadow: 0 12px 30px -5px rgba(56, 189, 248, 0.2);
+}
+
+/* Coming Soon Modules */
+.module-card.coming-soon-module {
+  opacity: 0.82;
+}
+
+.module-card.coming-soon-module:hover {
+  opacity: 1;
+}
+
+/* Card Header & Badges */
+.module-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.module-num {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--cyan-accent);
+  letter-spacing: 1px;
+}
+
+.module-status-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.module-status-badge.active-status {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.active-dot {
+  width: 6px;
+  height: 6px;
+  background: #34d399;
+  border-radius: 50%;
+  animation: pulse-dot 1.8s infinite ease-in-out;
+}
+
+.module-status-badge.coming-soon-status {
+  background: rgba(148, 163, 184, 0.1);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.module-card-body {
+  margin-bottom: 20px;
+}
+
+.module-icon-wrap {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.module-card-title {
+  font-size: 19px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+  line-height: 1.25;
+}
+
+.module-card-tagline {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--cyan-accent);
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+.module-card-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+/* Card Footer */
+.module-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+}
+
+.module-tools-count {
+  color: var(--text-faint);
+}
+
+.module-enter-action {
+  color: var(--cyan-accent);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.module-card.coming-soon-module .module-enter-action {
+  color: var(--text-faint);
+}
+
+/* ==============================================================
+   VIEW SWITCHING (PLATFORM HUB vs MODULE WORKSPACE)
+   ============================================================== */
+.portal-view {
+  display: none;
+}
+
+.portal-view.active-view {
+  display: block;
+}
+
+/* Back to Modules Bar inside a Module */
+.module-navigation-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.back-to-modules-btn {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 8px 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all var(--transition-fast);
+}
+
+.back-to-modules-btn:hover {
+  background: var(--bg-card);
+  border-color: var(--cyan-accent);
+  color: var(--cyan-accent);
+}
+
+/* ==============================================================
+   COMING SOON ROADMAP MODAL DIALOG
+   ============================================================== */
+.roadmap-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(4, 7, 12, 0.82);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  opacity: 0;
+  visibility: hidden;
+  transition: all var(--transition-fast);
+}
+
+.roadmap-modal-backdrop.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.roadmap-modal-panel {
+  background: #0d131c;
+  border: 1px solid var(--border-active);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8);
+  width: 100%;
+  max-width: 580px;
+  overflow: hidden;
+}
+
+.roadmap-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: #090e15;
+}
+
+.roadmap-modal-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}

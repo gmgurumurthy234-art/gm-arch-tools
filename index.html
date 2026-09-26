@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GM ARCH TOOLS — Architecture Workflow Platform</title>
+  <meta name="description" content="GM ARCH TOOLS: Complete Architecture Workflow Platform featuring 13 major modules, 35 Arch Calculatives, high-precision unit converter, and instant local search by Guru Murthy.">
+
+  <!-- Google Fonts: Space Grotesk & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Modular Stylesheets -->
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/modules.css">
+  <link rel="stylesheet" href="styles/wedge.css">
+  <link rel="stylesheet" href="styles/intro.css">
+  <link rel="stylesheet" href="styles/search.css">
+  <link rel="stylesheet" href="styles/tools.css">
+  <link rel="stylesheet" href="styles/unit-converter.css">
+</head>
+<body>
+
+  <!-- ==============================================================
+       GM DESIGN PORTAL — CINEMATIC ARCHITECTURAL OPENING EXPERIENCE
+       Visual Reference: Artboard 1 (Pure black -> Circular light ring -> GM logo -> DESIGN PORTAL -> Reveal)
+       ============================================================== -->
+  <div id="intro-overlay" role="dialog" aria-modal="true" aria-label="GM Design Portal Opening">
+    <!-- Pure Void Background -->
+    <div class="intro-backdrop"></div>
+
+    <!-- Architectural Corner Crosshairs -->
+    <div class="intro-crosshair top-left"></div>
+    <div class="intro-crosshair top-right"></div>
+    <div class="intro-crosshair bottom-left"></div>
+    <div class="intro-crosshair bottom-right"></div>
+
+    <!-- Center Cinematic Composition Stage (Exact geometry of Artboard 1) -->
+    <div class="intro-stage" id="intro-stage">
+      <!-- 1. Circular Light Ring Container -->
+      <div class="intro-ring-wrap" id="intro-ring-wrap">
+        <!-- SVG Vector Animated Drawing Ring -->
+        <svg class="intro-ring-svg" id="intro-ring-svg" viewBox="0 0 500 500" aria-hidden="true">
+          <!-- Background faint guide ring -->
+          <circle class="intro-ring-guide" cx="250" cy="250" r="230" />
+          <!-- Animated rotating drawing ring -->
+          <circle class="intro-ring-stroke" id="intro-ring-stroke" cx="250" cy="250" r="230" />
+        </svg>
+
+        <!-- Photographic Atmospheric Horizon Glow & Flares (From Artboard 1) -->
+        <div class="intro-ring-glow" id="intro-ring-glow"></div>
+      </div>
+
+      <!-- 2. Centered GM Monogram -->
+      <div class="intro-gm-container" id="intro-gm-container">
+        <img src="assets/gm-logo.png" alt="GM Architecture Monogram" class="intro-gm-img" id="intro-gm-img" width="192" height="122">
+      </div>
+
+      <!-- 3. DESIGN PORTAL Subtitle -->
+      <div class="intro-portal-container" id="intro-portal-container">
+        <img src="assets/design-portal.png" alt="DESIGN PORTAL" class="intro-portal-img" id="intro-portal-img" width="196" height="18">
+      </div>
+    </div>
+
+    <!-- Interactive Hint at Bottom -->
+    <div class="intro-hint" id="intro-hint">
+      <span class="intro-hint-dot"></span>
+      <span class="intro-hint-text">Click or Scroll to Enter</span>
+      <button type="button" class="intro-skip-btn" id="intro-skip-btn" title="Skip Intro (Esc)">Skip [Esc]</button>
+    </div>
+
+    <!-- Visual timeline scrub progress indicator -->
+    <div class="intro-progress-bar" id="intro-progress-bar"></div>
+  </div>
+
+  <!-- Background Technical Blueprint Grid -->
+  <div class="blueprint-grid" aria-hidden="true"></div>
+
+  <!-- Main Website Shell -->
+  <div class="app-wrapper">
+
+    <!-- Header Navigation -->
+    <header class="site-header">
+      <div class="header-container">
+        <!-- Brand & Logo -->
+        <a href="#" class="brand-block" id="brand-home-link" title="Return to GM Arch Tools Platform Hub">
+          <div class="brand-badge">GM</div>
+          <div class="brand-title">
+            <span class="brand-name">GM ARCH TOOLS</span>
+            <span class="brand-sub">Workflow Platform</span>
+          </div>
+        </a>
+
+        <!-- Global Search Trigger Bar -->
+        <button type="button" class="header-search-btn" id="header-search-btn" aria-label="Open Global Tool Search (Ctrl+K)">
+          <span style="color: var(--cyan-accent); font-size: 14px;">🔍</span>
+          <span class="search-placeholder">Search tools (e.g. plot, FSI, parking)...</span>
+          <span class="search-shortcut-badge">Ctrl K</span>
+        </button>
+
+        <!-- Identity & Modules Quick Switcher -->
+        <div class="header-meta">
+          <button type="button" class="back-to-modules-btn" id="header-modules-btn" style="padding: 6px 12px; font-size: 11px;">
+            <span>▦</span>
+            <span>All Modules</span>
+          </button>
+          <button type="button" class="replay-intro-btn" id="replay-intro-btn" title="Replay Opening Sequence">
+            <span>▶</span>
+            <span>Intro</span>
+          </button>
+          <div class="creator-tag">
+            Author: <span>Guru Murthy</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Dynamic Breadcrumb Navigation Bar -->
+    <nav class="breadcrumbs-bar" aria-label="Breadcrumb Trail">
+      <div class="breadcrumbs-container" id="breadcrumbs-container">
+        <!-- Rendered dynamically -->
+      </div>
+    </nav>
+
+    <!-- Main Platform Layout (Left Sidebar + Main Content Stage) -->
+    <div class="portal-layout-wrapper">
+
+      <!-- ==============================================================
+           LEFT SIDEBAR NAVIGATION (HOME, ALL MODULES, PROJECTS, ABOUT, ACCOUNT)
+           ============================================================== -->
+      <aside class="portal-sidebar" id="portal-sidebar" aria-label="Platform Sidebar Navigation">
+        <div class="sidebar-header-label">PLATFORM</div>
+        <ul class="sidebar-nav-list" id="sidebar-nav-list">
+          <li>
+            <button type="button" class="sidebar-nav-item active" data-nav-target="home" id="sidebar-nav-home">
+              <span class="nav-indicator"></span>
+              <span class="nav-label">HOME</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="sidebar-nav-item" data-nav-target="all-modules" id="sidebar-nav-modules">
+              <span class="nav-indicator"></span>
+              <span class="nav-label">ALL MODULES</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="sidebar-nav-item" data-nav-target="projects" id="sidebar-nav-projects">
+              <span class="nav-indicator"></span>
+              <span class="nav-label">PROJECTS</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="sidebar-nav-item" data-nav-target="about" id="sidebar-nav-about">
+              <span class="nav-indicator"></span>
+              <span class="nav-label">ABOUT</span>
+            </button>
+          </li>
+        </ul>
+
+        <div class="sidebar-divider"></div>
+
+        <!-- Account / User Area (Dynamic Authentication State) -->
+        <div class="sidebar-account-wrapper" id="sidebar-account">
+          <!-- Rendered dynamically by account-manager.js -->
+        </div>
+      </aside>
+
+      <!-- ==============================================================
+           MAIN PORTAL CONTENT AREA
+           ============================================================== -->
+      <div class="portal-main-area">
+
+        <!-- ============================================================
+             VIEW 1: HORIZONTAL MODULE WEDGE PORTAL (PRIMARY HUB)
+             ============================================================ -->
+        <section id="platform-modules-view" class="portal-view active-view" aria-label="Architecture Module Wedges">
+          
+          <!-- View Toggle & Platform Tag Bar -->
+          <div class="portal-view-toggle-bar">
+            <div class="wedge-portal-badge">
+              <span>●</span>
+              <span>13 Architecture Disciplines</span>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button type="button" class="portal-view-toggle-btn active" id="toggle-view-wedges" title="Flowing Wedge Carousel">
+                <span>▤</span>
+                <span>Wedge Portal</span>
+              </button>
+              <button type="button" class="portal-view-toggle-btn" id="toggle-view-grid" title="Overview Grid">
+                <span>▦</span>
+                <span>All Modules (13)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Wedge Portal Experience -->
+          <div class="wedge-portal-section" id="wedge-portal-container">
+            <!-- Viewport & Track -->
+            <div class="wedge-viewport-wrapper">
+              <!-- Navigation Arrow Buttons -->
+              <button type="button" class="wedge-nav-arrow prev-arrow" id="wedge-nav-prev" aria-label="Previous Module">‹</button>
+              <button type="button" class="wedge-nav-arrow next-arrow" id="wedge-nav-next" aria-label="Next Module">›</button>
+
+              <div class="wedge-viewport" id="wedge-viewport" role="region" aria-label="Module Wedges Carousel">
+                <div class="wedge-track" id="wedge-track">
+                  <!-- Rendered dynamically by wedge-carousel.js -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Position Dots & Navigation Counter -->
+            <div class="wedge-indicator-container">
+              <nav class="wedge-dots-nav" id="wedge-dots-nav" aria-label="Module Position Dots">
+                <!-- Rendered dynamically -->
+              </nav>
+              <div class="wedge-counter-text" id="wedge-counter-text">
+                <!-- e.g. 01 / 13 — ARCH CALCULATIVES -->
+              </div>
+              <div class="wedge-keyboard-hint">
+                <kbd>←</kbd> <kbd>→</kbd> Navigate Modules &nbsp;•&nbsp; <kbd>↵ Enter</kbd> Open Active Module &nbsp;•&nbsp; Drag / Wheel to Flow
+              </div>
+            </div>
+          </div>
+
+          <!-- 13 Modules Grid (Available when user selects All Modules) -->
+          <div class="modules-grid" id="modules-grid" style="display: none; margin-top: 24px;">
+            <!-- Rendered dynamically from modules-database.js -->
+          </div>
+
+        </section>
+
+        <!-- ============================================================
+             VIEW 2: MODULE 01 — ARCH CALCULATIVES (35 TOOLS SUITE)
+             ============================================================ -->
+        <section id="arch-calculatives-view" class="portal-view" aria-label="Arch Calculatives Suite">
+
+          <!-- Back to Modules Bar -->
+          <div class="module-navigation-header">
+            <button type="button" class="back-to-modules-btn" id="back-to-modules-btn">
+              <span>←</span>
+              <span>Back to Modules Portal</span>
+            </button>
+            <div style="font-family: var(--font-mono); font-size: 12px; color: var(--cyan-accent);">
+              MODULE 01 OF 13 · 35 ACTIVE TOOLS
+            </div>
+          </div>
+
+          <!-- Module Header -->
+          <div style="margin-bottom: 28px;">
+            <div style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 2px; color: var(--cyan-accent); text-transform: uppercase; margin-bottom: 6px;">
+              Module 01 — Computational Suite
+            </div>
+            <h2 style="font-size: clamp(24px, 4vw, 36px); font-weight: 800; color: #ffffff; letter-spacing: 0.5px; margin-bottom: 8px;">
+              ARCH CALCULATIVES
+            </h2>
+            <p style="color: var(--text-muted); font-size: 14px; max-width: 800px; line-height: 1.5;">
+              A deterministic architectural calculation library covering all statutory parameters: site planning, FSI/FAR limits, ground coverage, parking requirements, height caps, and RERA carpet standards.
+            </p>
+          </div>
+
+          <!-- Category Filter Tabs -->
+          <nav class="filter-bar" id="category-filter-bar" aria-label="Calculator Categories">
+            <!-- Rendered dynamically -->
+          </nav>
+
+          <!-- 35 Tools Grid -->
+          <section class="tools-grid" id="tools-grid" aria-label="35 Architecture Calculation Tools">
+            <!-- Rendered dynamically -->
+          </section>
+
+        </section>
+
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+      <div class="footer-content">
+        <div><strong>GM ARCH TOOLS</strong> — Complete Architecture Workflow Platform</div>
+        <div class="footer-meta">Conforms to National Building Code (NBC 2016), Model Building Bye-Laws, and Municipal Development Regulations.</div>
+        <div class="footer-meta">Created by Guru Murthy (GM) · 13 Major Architectural Modules</div>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- ==============================================================
+       ROADMAP MODAL DIALOG (COMING SOON MODULES)
+       ============================================================== -->
+  <div class="roadmap-modal-backdrop" id="roadmap-modal-backdrop" role="dialog" aria-modal="true" aria-label="Module Roadmap">
+    <div class="roadmap-modal-panel">
+      <div class="roadmap-modal-header">
+        <div>
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--amber-accent); text-transform: uppercase;" id="roadmap-status-badge">COMING SOON</span>
+          <h3 id="roadmap-title" style="font-size: 18px; font-weight: 700; color: #ffffff; margin-top: 2px;">Module Title</h3>
+        </div>
+        <button type="button" id="roadmap-close-btn" class="tool-detail-close-btn" title="Close (Esc)">✕</button>
+      </div>
+      <div class="roadmap-modal-body">
+        <div class="arch-section">
+          <div class="arch-section-title">Architectural Scope & Domain</div>
+          <div id="roadmap-category" style="font-family: var(--font-mono); font-size: 12px; color: var(--cyan-accent); margin-bottom: 8px;">Category</div>
+          <p id="roadmap-desc" style="font-size: 13.5px; color: var(--text-muted); line-height: 1.55;">Description</p>
+        </div>
+        <div class="arch-section" style="border-left: 3px solid var(--amber-accent);">
+          <div class="arch-section-title" style="color: var(--amber-accent);">Expansion Status</div>
+          <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">
+            This module is structured in the GM ARCH TOOLS registry. Its specialized tools and computational engines will be activated in upcoming development iterations.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==============================================================
+       PROJECTS MODAL DIALOG (SAVED CALCULATIONS & WORKSPACES)
+       ============================================================== -->
+  <div class="roadmap-modal-backdrop" id="projects-modal-backdrop" role="dialog" aria-modal="true" aria-label="Projects Workspace">
+    <div class="roadmap-modal-panel" style="max-width: 680px;">
+      <div class="roadmap-modal-header">
+        <div>
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--cyan-accent); text-transform: uppercase;">MODULE 13 · PROJECT WORKSPACE</span>
+          <h3 style="font-size: 19px; font-weight: 700; color: #ffffff; margin-top: 2px;">Active Projects & Saved Computations</h3>
+        </div>
+        <button type="button" id="projects-close-btn" class="tool-detail-close-btn" title="Close (Esc)">✕</button>
+      </div>
+      <div class="roadmap-modal-body" style="padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+        <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 4px;">
+          Saved multi-tool calculation sessions, statutory dossiers, and zoning reports stored locally on your device.
+        </p>
+
+        <!-- Project 1 -->
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px 18px;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+            <div>
+              <h4 style="font-size: 14px; font-weight: 700; color: #ffffff;">Commercial Tower A — FSI & Parking Study</h4>
+              <span style="font-family: var(--font-mono); font-size: 11px; color: var(--cyan-accent);">Plot 4,200 m² · Proposed FAR 2.75</span>
+            </div>
+            <span style="font-family: var(--font-mono); font-size: 10px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--green-accent); padding: 2px 7px; border-radius: 3px;">ACTIVE</span>
+          </div>
+          <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">
+            8 calculators run: Plot Area, Proposed FSI, Ground Coverage (38%), Setbacks Front & Rear, Parking Bays (120 bays).
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button type="button" class="btn-primary" style="padding: 5px 12px; font-size: 11px;" onclick="window.location.hash='#arch-calculatives'; document.getElementById('projects-modal-backdrop').classList.remove('open');">Load into Calculatives</button>
+          </div>
+        </div>
+
+        <!-- Project 2 -->
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px 18px;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+            <div>
+              <h4 style="font-size: 14px; font-weight: 700; color: #ffffff;">Greenfield Villa 42 — Coverage & RERA Carpet</h4>
+              <span style="font-family: var(--font-mono); font-size: 11px; color: var(--cyan-accent);">Plot 1,150 m² · Ground Coverage 32%</span>
+            </div>
+            <span style="font-family: var(--font-mono); font-size: 10px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-subtle); color: var(--text-muted); padding: 2px 7px; border-radius: 3px;">ARCHIVED</span>
+          </div>
+          <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">
+            5 calculators run: Carpet Area, Carpet-to-Built-up Efficiency (84.5%), Landscape Requirement (15%).
+          </div>
+        </div>
+
+        <!-- Project 3 -->
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px 18px;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+            <div>
+              <h4 style="font-size: 14px; font-weight: 700; color: #ffffff;">Urban Infill Podium — Road Widening Deduction</h4>
+              <span style="font-family: var(--font-mono); font-size: 11px; color: var(--cyan-accent);">Plot 2,800 m² · Net Plot 2,450 m²</span>
+            </div>
+            <span style="font-family: var(--font-mono); font-size: 10px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-subtle); color: var(--text-muted); padding: 2px 7px; border-radius: 3px;">DRAFT</span>
+          </div>
+          <div style="font-size: 12px; color: var(--text-muted);">
+            Includes road widening surrender (350 m²), amenity open space deduction, and balance consumable FSI.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==============================================================
+       ABOUT MODAL DIALOG
+       ============================================================== -->
+  <div class="roadmap-modal-backdrop" id="about-modal-backdrop" role="dialog" aria-modal="true" aria-label="About GM ARCH TOOLS">
+    <div class="roadmap-modal-panel" style="max-width: 640px;">
+      <div class="roadmap-modal-header">
+        <div>
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--cyan-accent); text-transform: uppercase;">PLATFORM SPECIFICATION</span>
+          <h3 style="font-size: 19px; font-weight: 700; color: #ffffff; margin-top: 2px;">About GM ARCH TOOLS</h3>
+        </div>
+        <button type="button" id="about-close-btn" class="tool-detail-close-btn" title="Close (Esc)">✕</button>
+      </div>
+      <div class="roadmap-modal-body" style="padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; align-items: center; gap: 14px; padding-bottom: 16px; border-bottom: 1px solid var(--border-subtle);">
+          <div class="brand-badge" style="font-size: 18px; padding: 8px 14px;">GM</div>
+          <div>
+            <h4 style="font-size: 16px; font-weight: 800; color: #ffffff;">GM ARCH TOOLS</h4>
+            <div style="font-family: var(--font-mono); font-size: 12px; color: var(--cyan-accent);">Architecture Workflow Platform</div>
+          </div>
+        </div>
+
+        <p style="font-size: 13.5px; color: var(--text-muted); line-height: 1.6;">
+          <strong>GM ARCH TOOLS</strong> is an all-in-one computational architecture platform created by <strong>Guru Murthy</strong>. It bridges the gap between statutory municipal bye-laws (NBC 2016, Model Bye-Laws, URDPFI) and real-world architectural design workflows.
+        </p>
+
+        <div style="background: rgba(56, 189, 248, 0.05); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: var(--radius-sm); padding: 14px 16px;">
+          <div style="font-family: var(--font-mono); font-size: 11px; color: var(--cyan-accent); font-weight: 700; margin-bottom: 6px;">CORE PRINCIPLES</div>
+          <ul style="font-size: 12.5px; color: var(--text-muted); line-height: 1.7; padding-left: 18px;">
+            <li><strong>13 Specialized Modules</strong>: From statutory calculations to parametric design, codes, estimation, and AI assistants.</li>
+            <li><strong>35 Arch Calculatives</strong>: Interactive 8-stage calculations for site, FSI, coverage, setbacks, parking, height, and carpet.</li>
+            <li><strong>Deterministic & Zero AI Latency</strong>: 100% mathematical local precision with instant live updates.</li>
+            <li><strong>Strict Dimensional Isolation</strong>: Units converter enforces separation between linear length and surface area.</li>
+          </ul>
+        </div>
+
+        <div style="font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); display: flex; justify-content: space-between; border-top: 1px solid var(--border-subtle); padding-top: 14px;">
+          <span>Author: <strong>Guru Murthy</strong></span>
+          <span>Version: <strong>2.4 Architectural Platform</strong></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==============================================================
+       GLOBAL SEARCH MODAL DIALOG
+       ============================================================== -->
+  <div class="search-modal-backdrop" id="search-modal-backdrop" role="dialog" aria-modal="true" aria-label="Global Tool Search">
+    <div class="search-modal-panel">
+      <!-- Input Header -->
+      <div class="search-input-header">
+        <span class="search-icon-symbol">⌕</span>
+        <input type="text" 
+               id="search-main-input" 
+               class="search-main-input" 
+               placeholder="Search tools (e.g. plot, fsi, parking, height, carpet)..." 
+               autocomplete="off" 
+               spellcheck="false">
+        <button type="button" id="search-clear-btn" class="search-clear-btn" title="Clear">✕</button>
+        <span class="search-esc-badge">ESC</span>
+      </div>
+
+      <!-- Results List -->
+      <ul class="search-results-list" id="search-results-list">
+        <!-- Rendered dynamically -->
+      </ul>
+
+      <!-- Footer Help Hints -->
+      <div class="search-modal-footer">
+        <div class="search-footer-keys">
+          <span class="key-hint"><span class="key-badge">↑</span> <span class="key-badge">↓</span> Navigate</span>
+          <span class="key-hint"><span class="key-badge">↵</span> Open Tool</span>
+          <span class="key-hint"><span class="key-badge">Esc</span> Close</span>
+        </div>
+        <div>Local Instant Engine (Zero AI Latency)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==============================================================
+       FULL ARCHITECTURE TOOL MODAL / VIEW (8-STAGE CONCEPT)
+       ============================================================== -->
+  <div class="tool-detail-backdrop" id="tool-detail-backdrop" role="dialog" aria-modal="true">
+    <div class="tool-detail-panel" id="tool-detail-content">
+      <!-- Populated dynamically by modal-controller.js -->
+    </div>
+  </div>
+
+  <!-- Application Bootstrap -->
+  <script type="module">
+    import { initApp } from './js/ui/app.js';
+    document.addEventListener('DOMContentLoaded', () => {
+      initApp();
+    });
+  </script>
+</body>
+</html>
