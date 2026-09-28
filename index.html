@@ -285,6 +285,45 @@
              ============================================================ -->
         <section id="site-analysis-view" class="portal-view site-analysis-view" aria-label="Site Analysis 3D Workspace">
 
+          <!-- Edge-Trigger Hotzone on the Far Left Edge -->
+          <div class="sa-edge-nav-trigger" id="sa-edge-nav-trigger" title="Hover for Navigation Drawer"></div>
+
+          <!-- Edge-Triggered Navigation Drawer Overlay -->
+          <aside class="sa-edge-nav-drawer" id="sa-edge-nav-drawer" aria-label="Quick Platform Navigation">
+            <div class="sa-drawer-brand">
+              <div>
+                <div class="sa-drawer-brand-title">GM ARCH TOOLS</div>
+                <div class="sa-drawer-brand-sub">Platform Navigation</div>
+              </div>
+              <button type="button" class="sa-drawer-close" id="sa-edge-nav-close" title="Close Drawer">✕</button>
+            </div>
+
+            <div class="sa-drawer-section-title">Core Sections</div>
+            <div class="sa-drawer-links">
+              <button type="button" class="sa-drawer-link-btn" id="sa-nav-hub-btn">
+                <span>🏛️</span>
+                <span>Platform Hub</span>
+              </button>
+              <button type="button" class="sa-drawer-link-btn" id="sa-nav-all-modules-btn">
+                <span>🗂️</span>
+                <span>All 13 Modules</span>
+              </button>
+              <button type="button" class="sa-drawer-link-btn" id="sa-nav-calculatives-btn">
+                <span>📐</span>
+                <span>Arch Calculatives (35)</span>
+              </button>
+              <button type="button" class="sa-drawer-link-btn" id="sa-nav-about-btn">
+                <span>ℹ️</span>
+                <span>About GM Arch Tools</span>
+              </button>
+            </div>
+
+            <div class="sa-drawer-section-title">Jump to Module</div>
+            <div class="sa-drawer-modules-grid" id="sa-drawer-modules-grid">
+              <!-- Populated dynamically -->
+            </div>
+          </aside>
+
           <!-- Workspace Header Bar -->
           <div class="sa-header-bar">
             <div class="sa-header-left">
@@ -306,21 +345,28 @@
             </div>
 
             <div class="sa-header-right">
-              <button type="button" class="sa-action-btn" id="sa-toggle-massing-btn" title="Toggle Conceptual 3D Massing Editor">
-                <span>📐</span>
-                <span>Massing Tools</span>
+              <button type="button" class="sa-action-btn" id="sa-toggle-left-btn" title="Toggle Environmental Topics Panel">
+                <span>◀</span>
+                <span>Topics 01–05</span>
+              </button>
+              <button type="button" class="sa-action-btn" id="sa-toggle-right-btn" title="Toggle Planning Topics Panel">
+                <span>Topics 06–10</span>
+                <span>▶</span>
               </button>
             </div>
           </div>
 
           <!-- 3-Column Workspace Main Stage (Left: 5 Topics | Center: 3D Viewport | Right: 5 Topics) -->
-          <div class="sa-workspace-body">
+          <div class="sa-workspace-body" id="sa-workspace-body">
 
             <!-- LEFT PANEL: TOPICS 01 TO 05 -->
             <aside class="sa-side-panel left-panel" id="sa-left-panel" aria-label="Environmental Site Topics 01 to 05">
               <div class="sa-panel-header">
                 <h3 class="sa-panel-title">ENVIRONMENTAL</h3>
-                <span class="sa-panel-count">01 — 05</span>
+                <div class="sa-panel-tools">
+                  <span class="sa-panel-count">01 — 05</span>
+                  <button type="button" class="sa-panel-collapse-btn" id="sa-left-collapse-btn" title="Collapse Panel">◀</button>
+                </div>
               </div>
               <ul class="sa-topic-list" id="sa-left-topic-list">
                 <!-- Rendered dynamically -->
@@ -345,17 +391,22 @@
                 <span>NORTH</span>
               </div>
 
-              <!-- Floating Camera View Controls Toolbar -->
-              <div class="sa-camera-toolbar" id="sa-camera-toolbar" role="toolbar" aria-label="Camera Controls">
-                <button type="button" class="sa-cam-btn" data-cam="TOP" title="Top Plan View">TOP</button>
-                <button type="button" class="sa-cam-btn" data-cam="FRONT" title="Front Elevation">FRONT</button>
-                <button type="button" class="sa-cam-btn" data-cam="RIGHT" title="Right Elevation">RIGHT</button>
-                <button type="button" class="sa-cam-btn" data-cam="LEFT" title="Left Elevation">LEFT</button>
-                <button type="button" class="sa-cam-btn" data-cam="BACK" title="Back Elevation">BACK</button>
-                <button type="button" class="sa-cam-btn" data-cam="ISOMETRIC" title="Isometric Axonometric">ISO</button>
-                <button type="button" class="sa-cam-btn active" data-cam="PERSPECTIVE" title="Perspective View">PERSP</button>
-                <button type="button" class="sa-cam-btn" data-cam="FIT" title="Fit Model to Viewport">FIT</button>
-                <button type="button" class="sa-cam-btn" data-cam="RESET" title="Reset Camera Orbit">↺ RESET</button>
+              <!-- Floating Top Viewport Command Toolbar -->
+              <div class="sa-viewport-toolbar" id="sa-viewport-toolbar" role="toolbar" aria-label="Viewport Controls">
+                <button type="button" class="sa-v-btn" id="sa-btn-fit" data-cam="FIT" title="Fit Site Boundary into View">FIT</button>
+                <button type="button" class="sa-v-btn" id="sa-btn-top" data-cam="TOP" title="Architectural Plan (Top) View">TOP</button>
+                <button type="button" class="sa-v-btn" id="sa-btn-iso" data-cam="ISO" title="45° Isometric Axonometric">ISO</button>
+                <button type="button" class="sa-v-btn active" id="sa-btn-persp" data-cam="PERSP" title="Perspective View">PERSP</button>
+                <div class="sa-v-separator"></div>
+                <button type="button" class="sa-v-btn" id="sa-btn-north" data-cam="NORTH" title="Orient Camera to True North">N</button>
+                <button type="button" class="sa-v-btn" id="sa-btn-sun" title="Toggle Solar Simulation">☀️ SUN</button>
+                <button type="button" class="sa-v-btn" id="sa-btn-grid" title="Toggle Drafting Grid">GRID</button>
+                <div class="sa-v-separator"></div>
+                <button type="button" class="sa-v-btn" id="sa-btn-layers" title="Open Layers &amp; Global Transparency Drawer">LAYERS</button>
+                <button type="button" class="sa-v-btn" id="sa-btn-massing" title="Open Conceptual Massing &amp; Floors Editor">MASSING</button>
+                <button type="button" class="sa-v-btn" id="sa-btn-measure" title="Interactive 3D Distance Measurement Tool">MEASURE</button>
+                <div class="sa-v-separator"></div>
+                <button type="button" class="sa-v-btn" id="sa-btn-presentation" title="Full-Bleed Presentation Mode (Esc to Exit)">PRESENTATION</button>
               </div>
 
               <!-- Central Three.js Canvas Container -->
@@ -366,11 +417,129 @@
                 <!-- Populated dynamically -->
               </div>
 
-              <!-- Conceptual Massing Drawer -->
+              <!-- Floating Layers & Global Transparency Drawer -->
+              <div class="sa-layers-drawer collapsed" id="sa-layers-drawer" aria-label="Layers &amp; Transparency">
+                <div class="sa-drawer-header">
+                  <h4 class="sa-drawer-title">LAYERS &amp; GLOBAL TRANSPARENCY</h4>
+                  <button type="button" class="sa-drawer-close-btn" id="sa-layers-close-btn" title="Close Layers Drawer">✕</button>
+                </div>
+                
+                <div class="sa-layer-control-row">
+                  <label class="sa-layer-toggle-wrap">
+                    <input type="checkbox" id="layer-vis-building" checked>
+                    <span>Building Mass</span>
+                  </label>
+                  <div class="sa-layer-opacity-wrap">
+                    <input type="range" class="sa-opacity-slider" id="layer-op-building" min="0" max="1" step="0.05" value="0.85">
+                    <span class="sa-opacity-val" id="layer-op-val-building">85%</span>
+                  </div>
+                </div>
+
+                <div class="sa-layer-control-row">
+                  <label class="sa-layer-toggle-wrap">
+                    <input type="checkbox" id="layer-vis-wind" checked>
+                    <span>Wind Vectors</span>
+                  </label>
+                  <div class="sa-layer-opacity-wrap">
+                    <input type="range" class="sa-opacity-slider" id="layer-op-wind" min="0" max="1" step="0.05" value="0.85">
+                    <span class="sa-opacity-val" id="layer-op-val-wind">85%</span>
+                  </div>
+                </div>
+
+                <div class="sa-layer-control-row">
+                  <label class="sa-layer-toggle-wrap">
+                    <input type="checkbox" id="layer-vis-sun" checked>
+                    <span>Sun Path Arc</span>
+                  </label>
+                  <div class="sa-layer-opacity-wrap">
+                    <input type="range" class="sa-opacity-slider" id="layer-op-sun" min="0" max="1" step="0.05" value="0.9">
+                    <span class="sa-opacity-val" id="layer-op-val-sun">90%</span>
+                  </div>
+                </div>
+
+                <div class="sa-layer-control-row">
+                  <label class="sa-layer-toggle-wrap">
+                    <input type="checkbox" id="layer-vis-terrain" checked>
+                    <span>Terrain / Contours</span>
+                  </label>
+                  <div class="sa-layer-opacity-wrap">
+                    <input type="range" class="sa-opacity-slider" id="layer-op-terrain" min="0" max="1" step="0.05" value="0.75">
+                    <span class="sa-opacity-val" id="layer-op-val-terrain">75%</span>
+                  </div>
+                </div>
+
+                <div class="sa-layer-control-row">
+                  <label class="sa-layer-toggle-wrap">
+                    <input type="checkbox" id="layer-vis-shadows" checked>
+                    <span>Ground Shadows</span>
+                  </label>
+                  <div class="sa-layer-opacity-wrap">
+                    <input type="range" class="sa-opacity-slider" id="layer-op-shadows" min="0" max="1" step="0.05" value="0.45">
+                    <span class="sa-opacity-val" id="layer-op-val-shadows">45%</span>
+                  </div>
+                </div>
+
+                <div class="sa-layer-control-row">
+                  <label class="sa-layer-toggle-wrap">
+                    <input type="checkbox" id="layer-vis-context" checked>
+                    <span>Surrounding Context</span>
+                  </label>
+                  <div class="sa-layer-opacity-wrap">
+                    <input type="range" class="sa-opacity-slider" id="layer-op-context" min="0" max="1" step="0.05" value="0.4">
+                    <span class="sa-opacity-val" id="layer-op-val-context">40%</span>
+                  </div>
+                </div>
+
+                <div class="sa-layer-control-row">
+                  <label class="sa-layer-toggle-wrap">
+                    <input type="checkbox" id="layer-vis-vegetation" checked>
+                    <span>Trees &amp; Lawn</span>
+                  </label>
+                  <div class="sa-layer-opacity-wrap">
+                    <input type="range" class="sa-opacity-slider" id="layer-op-vegetation" min="0" max="1" step="0.05" value="0.9">
+                    <span class="sa-opacity-val" id="layer-op-val-vegetation">90%</span>
+                  </div>
+                </div>
+
+                <div class="sa-layer-control-row">
+                  <label class="sa-layer-toggle-wrap">
+                    <input type="checkbox" id="layer-vis-roads" checked>
+                    <span>Roads &amp; Access</span>
+                  </label>
+                  <div class="sa-layer-opacity-wrap">
+                    <input type="range" class="sa-opacity-slider" id="layer-op-roads" min="0" max="1" step="0.05" value="0.9">
+                    <span class="sa-opacity-val" id="layer-op-val-roads">90%</span>
+                  </div>
+                </div>
+
+                <div class="sa-layer-control-row">
+                  <label class="sa-layer-toggle-wrap">
+                    <input type="checkbox" id="layer-vis-utilities" checked>
+                    <span>Utilities (MEP)</span>
+                  </label>
+                  <div class="sa-layer-opacity-wrap">
+                    <input type="range" class="sa-opacity-slider" id="layer-op-utilities" min="0" max="1" step="0.05" value="0.9">
+                    <span class="sa-opacity-val" id="layer-op-val-utilities">90%</span>
+                  </div>
+                </div>
+
+                <div class="sa-layer-control-row">
+                  <label class="sa-layer-toggle-wrap">
+                    <input type="checkbox" id="layer-vis-grid" checked>
+                    <span>Drafting Grid</span>
+                  </label>
+                  <div class="sa-layer-opacity-wrap">
+                    <input type="range" class="sa-opacity-slider" id="layer-op-grid" min="0" max="1" step="0.05" value="0.8">
+                    <span class="sa-opacity-val" id="layer-op-val-grid">80%</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Enhanced Conceptual Massing & Floors Drawer -->
               <div class="sa-massing-drawer collapsed" id="sa-massing-drawer">
                 <div class="sa-drawer-header">
-                  <h4 class="sa-drawer-title">3D CONCEPTUAL MASSING</h4>
-                  <button type="button" class="sa-drawer-close-btn" id="sa-drawer-close-btn" title="Close Massing Drawer">✕</button>
+                  <h4 class="sa-drawer-title">MASSING &amp; BUILDING FLOORS</h4>
+                  <button type="button" class="sa-drawer-close-btn" id="sa-massing-close-btn" title="Close Massing Drawer">✕</button>
                 </div>
                 
                 <!-- Shape Selection -->
@@ -380,7 +549,49 @@
                   <button type="button" class="sa-shape-btn" data-shape="TRIANGLE">Prism</button>
                 </div>
 
-                <!-- Dimension Sliders -->
+                <!-- Floors Synchronized Stepper -->
+                <div class="sa-field-row">
+                  <span class="sa-field-label">Floors (N)</span>
+                  <div class="sa-floors-stepper">
+                    <button type="button" class="sa-step-btn" id="sa-floor-decrement-btn" title="Decrease Floors">−</button>
+                    <span class="sa-floors-count-badge" id="sa-floors-count-val">3</span>
+                    <button type="button" class="sa-step-btn" id="sa-floor-increment-btn" title="Increase Floors">+</button>
+                  </div>
+                </div>
+
+                <!-- Floor-to-Floor Height -->
+                <div class="sa-field-row">
+                  <span class="sa-field-label">Floor H (h)</span>
+                  <div class="sa-field-inputs">
+                    <input type="range" class="sa-slider" id="sa-mass-floorHeight-slider" min="2.6" max="6.0" step="0.1" value="3.2">
+                    <input type="number" class="sa-num-input" id="sa-mass-floorHeight-num" min="2.6" max="6.0" step="0.1" value="3.2">
+                    <span class="sa-num-unit">m</span>
+                  </div>
+                </div>
+
+                <!-- Total Height (N * h) -->
+                <div class="sa-field-row">
+                  <span class="sa-field-label">Total H</span>
+                  <div class="sa-field-inputs">
+                    <input type="range" class="sa-slider" id="sa-mass-height-slider" min="3" max="80" step="0.5" value="9.6">
+                    <input type="number" class="sa-num-input" id="sa-mass-height-num" min="3" max="80" step="0.5" value="9.6">
+                    <span class="sa-num-unit">m</span>
+                  </div>
+                </div>
+
+                <!-- Live Footprint & Built-up Metrics -->
+                <div class="sa-metrics-badge-row">
+                  <div class="sa-metric-box">
+                    <span class="sa-metric-label">Footprint Area</span>
+                    <span class="sa-metric-value" id="sa-mass-footprint-val">384 m²</span>
+                  </div>
+                  <div class="sa-metric-box">
+                    <span class="sa-metric-label">Total Built-Up</span>
+                    <span class="sa-metric-value" id="sa-mass-builtup-val">1,152 m²</span>
+                  </div>
+                </div>
+
+                <!-- Dimensions -->
                 <div class="sa-field-row">
                   <span class="sa-field-label">Length / X</span>
                   <div class="sa-field-inputs">
@@ -395,15 +606,6 @@
                   <div class="sa-field-inputs">
                     <input type="range" class="sa-slider" id="sa-mass-width-slider" min="6" max="60" value="16">
                     <input type="number" class="sa-num-input" id="sa-mass-width-num" min="6" max="60" value="16">
-                    <span class="sa-num-unit">m</span>
-                  </div>
-                </div>
-
-                <div class="sa-field-row">
-                  <span class="sa-field-label">Height / Y</span>
-                  <div class="sa-field-inputs">
-                    <input type="range" class="sa-slider" id="sa-mass-height-slider" min="3" max="50" value="12">
-                    <input type="number" class="sa-num-input" id="sa-mass-height-num" min="3" max="50" value="12">
                     <span class="sa-num-unit">m</span>
                   </div>
                 </div>
@@ -436,33 +638,23 @@
                 </div>
               </div>
 
+              <!-- 3D Measurement Tool Floating HUD -->
+              <div class="sa-measure-hud" id="sa-measure-hud">
+                <span>📏 MEASUREMENT:</span>
+                <span class="sa-measure-val" id="sa-measure-dist-val">0.00 m</span>
+                <button type="button" class="sa-measure-btn" id="sa-measure-clear-btn">Clear</button>
+                <button type="button" class="sa-measure-btn" id="sa-measure-exit-btn">Done</button>
+              </div>
+
+              <!-- Presentation Mode Exit Floating Button -->
+              <button type="button" class="sa-exit-presentation-btn" id="sa-exit-presentation-btn" title="Exit Presentation Mode">
+                <span>✕</span>
+                <span>Exit Presentation (Esc)</span>
+              </button>
+
               <!-- Viewport Navigation Help Badge -->
               <div class="sa-view-help-badge">
                 <span>🖱️ Left: Orbit · Right/Shift: Pan · Wheel: Zoom</span>
-              </div>
-
-              <!-- Floating Overlay Layer Toggles Toolbar -->
-              <div class="sa-layers-toolbar" id="sa-layers-toolbar" role="toolbar" aria-label="Layer Toggles">
-                <label class="sa-layer-toggle">
-                  <input type="checkbox" id="sa-layer-building" checked>
-                  <span>Building</span>
-                </label>
-                <label class="sa-layer-toggle">
-                  <input type="checkbox" id="sa-layer-grid" checked>
-                  <span>Grid</span>
-                </label>
-                <label class="sa-layer-toggle">
-                  <input type="checkbox" id="sa-layer-north" checked>
-                  <span>North</span>
-                </label>
-                <label class="sa-layer-toggle">
-                  <input type="checkbox" id="sa-layer-context" checked>
-                  <span>Context</span>
-                </label>
-                <label class="sa-layer-toggle">
-                  <input type="checkbox" id="sa-layer-overlay" checked>
-                  <span>Analysis Overlay</span>
-                </label>
               </div>
 
             </main>
@@ -471,7 +663,10 @@
             <aside class="sa-side-panel right-panel" id="sa-right-panel" aria-label="Civil &amp; Planning Topics 06 to 10">
               <div class="sa-panel-header">
                 <h3 class="sa-panel-title">PLANNING &amp; URBAN</h3>
-                <span class="sa-panel-count">06 — 10</span>
+                <div class="sa-panel-tools">
+                  <span class="sa-panel-count">06 — 10</span>
+                  <button type="button" class="sa-panel-collapse-btn" id="sa-right-collapse-btn" title="Collapse Panel">▶</button>
+                </div>
               </div>
               <ul class="sa-topic-list" id="sa-right-topic-list">
                 <!-- Rendered dynamically -->

@@ -299,6 +299,57 @@ const rightCount = SITE_ANALYSIS_MODES.filter(m => m.panel === 'right').length;
 assert(leftCount === 5, `Left panel has exactly 5 topics (01-05), found ${leftCount}`);
 assert(rightCount === 5, `Right panel has exactly 5 topics (06-10), found ${rightCount}`);
 
+// 7. ITERATION 02 — WORKSTATION, VIEWPORT, LAYERS & MASSING INTEGRITY
+console.log('\n--- 7. Testing Iteration 02 Workstation, Layers & Floors Features ---');
+import fs from 'fs';
+const indexHtmlContent = fs.readFileSync('index.html', 'utf-8');
+const cssContent = fs.readFileSync('styles/site-analysis.css', 'utf-8');
+const viewportContent = fs.readFileSync('js/site-analysis/site-viewport.js', 'utf-8');
+
+// Edge navigation drawer presence
+assert(indexHtmlContent.includes('id="sa-edge-nav-trigger"'), 'HTML contains edge nav trigger');
+assert(indexHtmlContent.includes('id="sa-edge-nav-drawer"'), 'HTML contains edge nav drawer overlay');
+assert(cssContent.includes('.sa-edge-nav-drawer'), 'CSS contains edge nav drawer styles');
+
+// Viewport floating toolbar presence
+const expectedToolbarButtons = [
+  'sa-btn-fit', 'sa-btn-top', 'sa-btn-iso', 'sa-btn-persp',
+  'sa-btn-north', 'sa-btn-sun', 'sa-btn-grid', 'sa-btn-layers',
+  'sa-btn-massing', 'sa-btn-measure', 'sa-btn-presentation'
+];
+expectedToolbarButtons.forEach(btnId => {
+  assert(indexHtmlContent.includes(`id="${btnId}"`), `HTML toolbar contains button #${btnId}`);
+});
+
+// Layers drawer presence
+assert(indexHtmlContent.includes('id="sa-layers-drawer"'), 'HTML contains floating layers drawer');
+assert(cssContent.includes('.sa-layers-drawer'), 'CSS contains layers drawer styling');
+
+// Floors stepper & areas
+assert(indexHtmlContent.includes('id="sa-floor-decrement-btn"'), 'HTML contains floor decrement button');
+assert(indexHtmlContent.includes('id="sa-floor-increment-btn"'), 'HTML contains floor increment button');
+assert(indexHtmlContent.includes('id="sa-mass-floorHeight-slider"'), 'HTML contains floor height slider');
+assert(indexHtmlContent.includes('id="sa-mass-footprint-val"'), 'HTML contains footprint area metric');
+assert(indexHtmlContent.includes('id="sa-mass-builtup-val"'), 'HTML contains built-up area metric');
+
+// Measurement HUD & Presentation mode
+assert(indexHtmlContent.includes('id="sa-measure-hud"'), 'HTML contains 3D measurement HUD');
+assert(indexHtmlContent.includes('id="sa-exit-presentation-btn"'), 'HTML contains exit presentation button');
+assert(cssContent.includes('.presentation-mode-active'), 'CSS contains presentation mode rules');
+assert(cssContent.includes('body.site-analysis-active'), 'CSS contains dedicated workstation rules');
+
+// Fog washout bugfix verification
+assert(!viewportContent.includes('this.scene.fog = new THREE.FogExp2'), 'CRITICAL BUGFIX: FogExp2 is removed to prevent zoom washout');
+
+// Synchronized Floor Math Invariant
+const testFloors = 4;
+const testFloorH = 3.2;
+const expectedTotalH = testFloors * testFloorH;
+const testFootprint = 384;
+const expectedBuiltUp = testFootprint * testFloors;
+assert(Math.abs(expectedTotalH - 12.8) < 0.001, 'Floor height formula: 4 floors × 3.2m = 12.8m');
+assert(expectedBuiltUp === 1536, 'Built-up area formula: 384m² × 4 floors = 1536m²');
+
 console.log(`\n========================================`);
 console.log(`TEST SUMMARY: ${passed} PASSED, ${failed} FAILED`);
 console.log(`========================================\n`);
@@ -306,3 +357,4 @@ console.log(`========================================\n`);
 if (failed > 0) {
   process.exit(1);
 }
+

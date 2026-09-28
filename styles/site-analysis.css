@@ -1,12 +1,12 @@
 /* ==============================================================
-   GM ARCH TOOLS — SITE ANALYSIS MODULE STYLESHEET
+   GM ARCH TOOLS — SITE ANALYSIS MODULE STYLESHEET (Iteration 02)
    Architectural Environmental Workspace & 3D Interactive Viewport
    Author: Guru Murthy (GM)
    ============================================================== */
 
 :root {
   --sa-bg: #06090f;
-  --sa-panel-bg: rgba(10, 15, 25, 0.88);
+  --sa-panel-bg: rgba(10, 15, 25, 0.92);
   --sa-panel-border: rgba(56, 189, 248, 0.16);
   --sa-panel-border-hover: rgba(56, 189, 248, 0.4);
   --sa-card-bg: rgba(15, 23, 42, 0.65);
@@ -27,7 +27,217 @@
 }
 
 /* ==============================================================
-   WORKSPACE VIEWPORT SHELL
+   01. FULLSCREEN DEDICATED WORKSTATION STATE
+   When body.site-analysis-active is present:
+   Hide main website header, breadcrumbs, and footer.
+   ============================================================== */
+body.site-analysis-active {
+  overflow: hidden !important;
+}
+
+body.site-analysis-active .site-header,
+body.site-analysis-active .breadcrumbs-bar,
+body.site-analysis-active .site-footer {
+  display: none !important;
+}
+
+body.site-analysis-active #site-analysis-view {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 300 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+body.site-analysis-active .sa-workspace-body {
+  height: calc(100vh - 54px) !important;
+  min-height: unset !important;
+}
+
+/* ==============================================================
+   02. EDGE-TRIGGERED NAVIGATION DRAWER
+   Smooth overlay sliding from the left boundary.
+   Overlays on top — ZERO layout shift or canvas resizing.
+   ============================================================== */
+.sa-edge-nav-trigger {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 18px;
+  z-index: 1100;
+  cursor: pointer;
+  background: transparent;
+  transition: all 0.2s ease;
+}
+
+.sa-edge-nav-trigger::before {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 48px;
+  background: rgba(56, 189, 248, 0.45);
+  border-radius: 2px;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+  opacity: 0.6;
+  transition: all 0.25s ease;
+}
+
+.sa-edge-nav-trigger:hover::before {
+  height: 90px;
+  opacity: 1;
+  background: var(--sa-accent-glow);
+  box-shadow: 0 0 16px var(--sa-accent-glow);
+}
+
+.sa-edge-nav-drawer {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 300px;
+  background: rgba(8, 12, 22, 0.98);
+  border-right: 1px solid rgba(56, 189, 248, 0.25);
+  backdrop-filter: blur(20px);
+  z-index: 1150;
+  transform: translateX(-100%);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 15px 0 45px rgba(0, 0, 0, 0.75);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.sa-edge-nav-trigger:hover + .sa-edge-nav-drawer,
+.sa-edge-nav-drawer:hover,
+.sa-edge-nav-drawer.open {
+  transform: translateX(0);
+}
+
+.sa-drawer-brand {
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--sa-panel-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(10, 15, 25, 0.8);
+}
+
+.sa-drawer-brand-title {
+  font-family: var(--sa-font-mono);
+  font-size: 13px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.8px;
+}
+
+.sa-drawer-brand-sub {
+  font-size: 10px;
+  color: var(--sa-accent-cyan);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.sa-drawer-close {
+  background: transparent;
+  border: none;
+  color: var(--sa-text-muted);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.sa-drawer-close:hover {
+  color: #ffffff;
+}
+
+.sa-drawer-section-title {
+  font-family: var(--sa-font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--sa-accent-cyan);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  padding: 14px 20px 6px;
+}
+
+.sa-drawer-links {
+  display: flex;
+  flex-direction: column;
+  padding: 6px 12px;
+  gap: 4px;
+}
+
+.sa-drawer-link-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid transparent;
+  border-radius: var(--sa-radius-sm);
+  color: var(--sa-text-muted);
+  font-family: var(--sa-font-mono);
+  font-size: 11.5px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.18s ease;
+}
+
+.sa-drawer-link-btn:hover {
+  background: rgba(56, 189, 248, 0.1);
+  border-color: rgba(56, 189, 248, 0.3);
+  color: #ffffff;
+  transform: translateX(3px);
+}
+
+.sa-drawer-link-btn.active {
+  background: rgba(56, 189, 248, 0.2);
+  border-color: var(--sa-accent-cyan);
+  color: var(--sa-accent-glow);
+}
+
+.sa-drawer-modules-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  padding: 6px 12px 20px;
+  gap: 4px;
+}
+
+.sa-drawer-module-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  border-radius: var(--sa-radius-sm);
+  color: var(--sa-text-muted);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sa-drawer-module-item:hover {
+  background: rgba(56, 189, 248, 0.08);
+  border-color: rgba(56, 189, 248, 0.25);
+  color: #ffffff;
+}
+
+.sa-drawer-mod-num {
+  font-family: var(--sa-font-mono);
+  font-size: 9.5px;
+  color: var(--sa-accent-cyan);
+  font-weight: 700;
+}
+
+/* ==============================================================
+   03. TOP NAVIGATION & STATUS BAR
    ============================================================== */
 .site-analysis-view {
   display: flex;
@@ -39,15 +249,14 @@
   overflow: hidden;
 }
 
-/* Top Navigation & Status Bar */
 .sa-header-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 14px;
-  padding: 12px 24px;
-  background: rgba(10, 15, 25, 0.95);
+  gap: 12px;
+  padding: 10px 20px;
+  background: rgba(10, 15, 25, 0.96);
   border-bottom: 1px solid var(--sa-panel-border);
   backdrop-filter: blur(12px);
   z-index: 20;
@@ -56,7 +265,7 @@
 .sa-header-left {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
 }
 
 .sa-back-btn {
@@ -71,7 +280,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  padding: 7px 14px;
+  padding: 6px 12px;
   border-radius: var(--sa-radius-sm);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -91,14 +300,14 @@
 
 .sa-title-tag {
   font-family: var(--sa-font-mono);
-  font-size: 10px;
-  letter-spacing: 1.5px;
+  font-size: 9.5px;
+  letter-spacing: 1.2px;
   color: var(--sa-accent-cyan);
   text-transform: uppercase;
 }
 
 .sa-title-main {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 800;
   color: #ffffff;
   letter-spacing: 0.5px;
@@ -118,7 +327,7 @@
   gap: 8px;
   background: rgba(56, 189, 248, 0.08);
   border: 1px solid var(--sa-panel-border);
-  padding: 6px 14px;
+  padding: 5px 12px;
   border-radius: 20px;
   font-family: var(--sa-font-mono);
   font-size: 11px;
@@ -137,13 +346,13 @@
 
 @keyframes sa-pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.85); }
+  50% { opacity: 0.45; transform: scale(0.85); }
 }
 
 .sa-header-right {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .sa-action-btn {
@@ -163,14 +372,14 @@
 
 .sa-action-btn:hover,
 .sa-action-btn.active {
-  background: rgba(56, 189, 248, 0.15);
+  background: rgba(56, 189, 248, 0.18);
   border-color: var(--sa-accent-cyan);
   color: #ffffff;
 }
 
 /* ==============================================================
-   WORKSPACE 3-COLUMN MAIN LAYOUT
-   Left: 5 Topics | Center: 3D Viewport | Right: 5 Topics
+   04. 3-COLUMN WORKSPACE BODY (COLLAPSIBLE SIDE PANELS)
+   Left: 310px | Center: 1fr | Right: 310px
    ============================================================== */
 .sa-workspace-body {
   display: grid;
@@ -179,9 +388,21 @@
   min-height: calc(100vh - 170px);
   position: relative;
   overflow: hidden;
+  transition: grid-template-columns 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Left & Right Side Panels */
+.sa-workspace-body.left-collapsed {
+  grid-template-columns: 0px 1fr 310px;
+}
+
+.sa-workspace-body.right-collapsed {
+  grid-template-columns: 310px 1fr 0px;
+}
+
+.sa-workspace-body.both-collapsed {
+  grid-template-columns: 0px 1fr 0px;
+}
+
 .sa-side-panel {
   background: var(--sa-panel-bg);
   border-right: 1px solid var(--sa-panel-border);
@@ -189,9 +410,14 @@
   flex-direction: column;
   overflow-y: auto;
   z-index: 10;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
   scrollbar-width: thin;
   scrollbar-color: rgba(56, 189, 248, 0.2) transparent;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.sa-side-panel.collapsed {
+  display: none !important;
 }
 
 .sa-side-panel.right-panel {
@@ -208,9 +434,9 @@
 }
 
 .sa-panel-header {
-  padding: 14px 18px;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--sa-panel-border);
-  background: rgba(10, 15, 25, 0.6);
+  background: rgba(10, 15, 25, 0.65);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -226,6 +452,12 @@
   margin: 0;
 }
 
+.sa-panel-tools {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .sa-panel-count {
   font-family: var(--sa-font-mono);
   font-size: 10px;
@@ -235,12 +467,30 @@
   color: var(--sa-text-muted);
 }
 
+.sa-panel-collapse-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--sa-text-muted);
+  font-family: var(--sa-font-mono);
+  font-size: 10px;
+  padding: 3px 6px;
+  border-radius: var(--sa-radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sa-panel-collapse-btn:hover {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: var(--sa-accent-cyan);
+  color: #ffffff;
+}
+
 /* Topic Button List */
 .sa-topic-list {
   display: flex;
   flex-direction: column;
-  padding: 10px;
-  gap: 6px;
+  padding: 8px;
+  gap: 5px;
   list-style: none;
   margin: 0;
 }
@@ -248,16 +498,16 @@
 .sa-topic-btn {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   width: 100%;
-  padding: 10px 14px;
+  padding: 9px 12px;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: var(--sa-radius-md);
   color: var(--sa-text-muted);
   cursor: pointer;
   text-align: left;
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   overflow: hidden;
 }
@@ -270,10 +520,10 @@
 }
 
 .sa-topic-btn.active {
-  background: linear-gradient(90deg, rgba(56, 189, 248, 0.16) 0%, rgba(56, 189, 248, 0.04) 100%);
+  background: linear-gradient(90deg, rgba(56, 189, 248, 0.18) 0%, rgba(56, 189, 248, 0.04) 100%);
   border-color: var(--sa-accent-cyan);
   color: #ffffff;
-  box-shadow: 0 0 15px rgba(56, 189, 248, 0.15);
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.15);
 }
 
 .sa-topic-btn.active::before {
@@ -289,23 +539,23 @@
 
 .sa-topic-num {
   font-family: var(--sa-font-mono);
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 700;
   color: var(--sa-accent-cyan);
   background: rgba(56, 189, 248, 0.1);
-  padding: 3px 6px;
+  padding: 2px 5px;
   border-radius: 3px;
 }
 
 .sa-topic-title {
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 600;
   letter-spacing: 0.2px;
   flex: 1;
 }
 
 .sa-topic-icon {
-  font-size: 14px;
+  font-size: 13px;
   opacity: 0.7;
 }
 
@@ -314,7 +564,7 @@
 }
 
 /* ==============================================================
-   CENTRAL 3D VIEWPORT CONTAINER
+   05. CENTRAL 3D VIEWPORT CONTAINER
    ============================================================== */
 .sa-viewport-area {
   position: relative;
@@ -335,7 +585,7 @@
   cursor: grabbing;
 }
 
-/* Viewport Corner Crosshairs (Architectural Drafting Aesthetic) */
+/* Viewport Corner Crosshairs */
 .sa-crosshair {
   position: absolute;
   width: 14px;
@@ -360,23 +610,23 @@
 .sa-crosshair.bottom-left { bottom: 12px; left: 12px; }
 .sa-crosshair.bottom-right { bottom: 12px; right: 12px; }
 
-/* North Direction 3D Compass Gizmo (Top Left of Viewport) */
+/* North Direction 3D Compass Gizmo */
 .sa-north-gizmo {
   position: absolute;
-  top: 18px;
-  left: 20px;
+  top: 16px;
+  left: 18px;
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(10, 15, 25, 0.75);
+  background: rgba(10, 15, 25, 0.8);
   border: 1px solid var(--sa-panel-border);
-  padding: 6px 12px;
+  padding: 5px 12px;
   border-radius: 20px;
   backdrop-filter: blur(8px);
-  z-index: 10;
+  z-index: 15;
   pointer-events: none;
   font-family: var(--sa-font-mono);
-  font-size: 11px;
+  font-size: 10.5px;
   color: var(--sa-accent-cyan);
 }
 
@@ -390,164 +640,163 @@
   transition: transform 0.1s ease-out;
 }
 
-/* Floating View Control Toolbar (Top Right of Viewport) */
-.sa-camera-toolbar {
+/* ==============================================================
+   06. FLOATING VIEWPORT COMMAND TOOLBAR (TOP RIGHT)
+   [FIT] [TOP] [ISO] [PERSP] [N] [SUN] [GRID] [LAYERS] [MASSING] [MEASURE] [PRESENTATION]
+   ============================================================== */
+.sa-viewport-toolbar {
   position: absolute;
-  top: 16px;
-  right: 18px;
+  top: 14px;
+  right: 16px;
   display: flex;
-  gap: 4px;
-  background: rgba(10, 15, 25, 0.85);
+  align-items: center;
+  gap: 3px;
+  background: rgba(10, 15, 25, 0.92);
   border: 1px solid var(--sa-panel-border);
   padding: 4px;
   border-radius: var(--sa-radius-md);
-  backdrop-filter: blur(10px);
-  z-index: 10;
+  backdrop-filter: blur(14px);
+  z-index: 30;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
 }
 
-.sa-cam-btn {
+.sa-v-btn {
   background: transparent;
   border: 1px solid transparent;
   color: var(--sa-text-muted);
   font-family: var(--sa-font-mono);
   font-size: 10px;
-  font-weight: 600;
-  padding: 5px 8px;
+  font-weight: 700;
+  padding: 5px 9px;
   border-radius: var(--sa-radius-sm);
   cursor: pointer;
   transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
 }
 
-.sa-cam-btn:hover {
-  background: rgba(56, 189, 248, 0.1);
+.sa-v-btn:hover {
+  background: rgba(56, 189, 248, 0.12);
   color: #ffffff;
   border-color: rgba(56, 189, 248, 0.3);
 }
 
-.sa-cam-btn.active {
-  background: rgba(56, 189, 248, 0.2);
+.sa-v-btn.active {
+  background: rgba(56, 189, 248, 0.22);
   color: var(--sa-accent-glow);
   border-color: var(--sa-accent-cyan);
 }
 
-/* Floating Overlay Layer Toggles Toolbar (Bottom Right of Viewport) */
-.sa-layers-toolbar {
-  position: absolute;
-  bottom: 18px;
-  right: 18px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: rgba(10, 15, 25, 0.85);
-  border: 1px solid var(--sa-panel-border);
-  padding: 6px 14px;
-  border-radius: var(--sa-radius-md);
-  backdrop-filter: blur(8px);
-  z-index: 10;
-  font-family: var(--sa-font-mono);
-  font-size: 11px;
+.sa-v-separator {
+  width: 1px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.12);
+  margin: 0 2px;
 }
 
-.sa-layer-toggle {
+/* ==============================================================
+   07. FLOATING LAYERS & GLOBAL TRANSPARENCY DRAWER
+   Independent visibility switches AND 0%–100% sliders
+   ============================================================== */
+.sa-layers-drawer {
+  position: absolute;
+  top: 56px;
+  right: 16px;
+  width: 320px;
+  background: rgba(10, 15, 25, 0.96);
+  border: 1px solid var(--sa-panel-border);
+  border-radius: var(--sa-radius-md);
+  padding: 14px 16px;
+  backdrop-filter: blur(18px);
+  z-index: 45;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.65);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sa-layers-drawer.collapsed {
+  display: none;
+}
+
+.sa-layer-control-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: space-between;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 5px 8px;
+  border-radius: var(--sa-radius-sm);
+}
+
+.sa-layer-toggle-wrap {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--sa-font-mono);
+  font-size: 11px;
   color: var(--sa-text-muted);
   cursor: pointer;
+  min-width: 100px;
   user-select: none;
 }
 
-.sa-layer-toggle input[type="checkbox"] {
+.sa-layer-toggle-wrap input[type="checkbox"] {
   accent-color: var(--sa-accent-cyan);
   cursor: pointer;
 }
 
-.sa-layer-toggle:hover {
-  color: #ffffff;
-}
-
-/* Viewport Navigation Help Badge (Bottom Left) */
-.sa-view-help-badge {
-  position: absolute;
-  bottom: 18px;
-  left: 20px;
+.sa-layer-opacity-wrap {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  flex: 1;
+}
+
+.sa-opacity-slider {
+  flex: 1;
+  accent-color: var(--sa-accent-cyan);
+  cursor: pointer;
+  height: 3px;
+}
+
+.sa-opacity-val {
   font-family: var(--sa-font-mono);
   font-size: 10px;
-  color: var(--sa-text-faint);
-  background: rgba(10, 15, 25, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  padding: 5px 10px;
-  border-radius: var(--sa-radius-sm);
-  pointer-events: none;
-  z-index: 10;
-}
-
-/* Active Analysis Mode Legend (Floating in Viewport) */
-.sa-mode-legend {
-  position: absolute;
-  top: 60px;
-  left: 20px;
-  background: rgba(10, 15, 25, 0.85);
-  border: 1px solid var(--sa-panel-border);
-  padding: 8px 12px;
-  border-radius: var(--sa-radius-md);
-  backdrop-filter: blur(8px);
-  z-index: 10;
-  font-family: var(--sa-font-mono);
-  font-size: 10.5px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  pointer-events: none;
-  max-width: 220px;
-}
-
-.sa-legend-title {
-  font-weight: 700;
   color: var(--sa-accent-cyan);
-  text-transform: uppercase;
-  font-size: 9.5px;
-  letter-spacing: 1px;
-  margin-bottom: 2px;
-}
-
-.sa-legend-item {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  color: var(--sa-text-muted);
-}
-
-.sa-legend-swatch {
-  width: 12px;
-  height: 4px;
-  border-radius: 2px;
+  min-width: 32px;
+  text-align: right;
 }
 
 /* ==============================================================
-   CONCEPTUAL MASSING TOOLS DRAWER / MODAL
-   Shape Creation: Rectangle, Circle/Cylinder, Triangle/Prism
-   Dimensions: Length, Width, Height, Position, Rotation
+   08. CONCEPTUAL MASSING & FLOORS DRAWER
+   Synchronized floors counter [−] 03 [+], floor-to-floor height,
+   total height, dimensions, footprint and built-up area
    ============================================================== */
 .sa-massing-drawer {
   position: absolute;
-  top: 60px;
-  right: 18px;
-  width: 290px;
-  background: rgba(10, 15, 25, 0.94);
+  top: 56px;
+  right: 16px;
+  width: 310px;
+  background: rgba(10, 15, 25, 0.96);
   border: 1px solid var(--sa-panel-border);
   border-radius: var(--sa-radius-md);
   padding: 14px 16px;
-  backdrop-filter: blur(14px);
-  z-index: 15;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(18px);
+  z-index: 45;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.65);
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  gap: 11px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .sa-massing-drawer.collapsed {
@@ -584,7 +833,6 @@
   color: #ffffff;
 }
 
-/* Shape Selector Tabs */
 .sa-shape-selector {
   display: flex;
   gap: 4px;
@@ -609,7 +857,80 @@
 }
 
 .sa-shape-btn.active {
-  background: rgba(56, 189, 248, 0.2);
+  background: rgba(56, 189, 248, 0.22);
+  color: var(--sa-accent-glow);
+}
+
+/* Floor Stepper Controls */
+.sa-floors-stepper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sa-step-btn {
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid var(--sa-panel-border);
+  color: #ffffff;
+  font-family: var(--sa-font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--sa-radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sa-step-btn:hover {
+  background: rgba(56, 189, 248, 0.25);
+  border-color: var(--sa-accent-cyan);
+  color: var(--sa-accent-glow);
+}
+
+.sa-floors-count-badge {
+  font-family: var(--sa-font-mono);
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--sa-accent-cyan);
+  background: rgba(56, 189, 248, 0.1);
+  padding: 4px 10px;
+  border-radius: var(--sa-radius-sm);
+  min-width: 32px;
+  text-align: center;
+}
+
+/* Area Metrics Grid */
+.sa-metrics-badge-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  background: rgba(56, 189, 248, 0.05);
+  border: 1px solid var(--sa-panel-border);
+  padding: 8px 10px;
+  border-radius: var(--sa-radius-sm);
+  margin-top: 4px;
+}
+
+.sa-metric-box {
+  display: flex;
+  flex-direction: column;
+}
+
+.sa-metric-label {
+  font-family: var(--sa-font-mono);
+  font-size: 9.5px;
+  color: var(--sa-text-muted);
+  text-transform: uppercase;
+}
+
+.sa-metric-value {
+  font-family: var(--sa-font-mono);
+  font-size: 13px;
+  font-weight: 700;
   color: var(--sa-accent-glow);
 }
 
@@ -625,7 +946,7 @@
   font-family: var(--sa-font-mono);
   font-size: 10.5px;
   color: var(--sa-text-muted);
-  min-width: 60px;
+  min-width: 65px;
 }
 
 .sa-field-inputs {
@@ -662,8 +983,169 @@
 }
 
 /* ==============================================================
-   MODE-SPECIFIC INTERACTIVE CONTROLS CONTAINER
-   (Docked inside side panel or below viewport)
+   09. 3D MEASUREMENT TOOL HUD
+   ============================================================== */
+.sa-measure-hud {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(10, 15, 25, 0.95);
+  border: 1px solid var(--sa-accent-cyan);
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.25);
+  padding: 8px 16px;
+  border-radius: 24px;
+  backdrop-filter: blur(14px);
+  z-index: 50;
+  display: none;
+  align-items: center;
+  gap: 14px;
+  font-family: var(--sa-font-mono);
+  font-size: 11.5px;
+}
+
+.sa-measure-val {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--sa-accent-glow);
+}
+
+.sa-measure-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--sa-panel-border);
+  color: var(--sa-text-muted);
+  font-family: var(--sa-font-mono);
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.sa-measure-btn:hover {
+  background: rgba(56, 189, 248, 0.2);
+  color: #ffffff;
+}
+
+/* ==============================================================
+   10. PRESENTATION MODE
+   1-Click Full bleed mode for client presentations and jury reviews
+   ============================================================== */
+.presentation-mode-active .sa-header-bar,
+.presentation-mode-active .sa-side-panel,
+.presentation-mode-active .sa-viewport-toolbar,
+.presentation-mode-active .sa-layers-drawer,
+.presentation-mode-active .sa-massing-drawer,
+.presentation-mode-active .sa-mode-legend,
+.presentation-mode-active .sa-view-help-badge,
+.presentation-mode-active .sa-edge-nav-trigger,
+.presentation-mode-active .sa-edge-nav-drawer {
+  display: none !important;
+}
+
+.presentation-mode-active .sa-workspace-body {
+  grid-template-columns: 1fr !important;
+  height: 100vh !important;
+}
+
+.presentation-mode-active .sa-viewport-area {
+  width: 100vw !important;
+  height: 100vh !important;
+}
+
+.sa-exit-presentation-btn {
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  background: rgba(10, 15, 25, 0.85);
+  border: 1px solid var(--sa-panel-border);
+  color: var(--sa-text-muted);
+  font-family: var(--sa-font-mono);
+  font-size: 11px;
+  padding: 8px 14px;
+  border-radius: var(--sa-radius-sm);
+  cursor: pointer;
+  z-index: 100;
+  display: none;
+  backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+}
+
+.presentation-mode-active .sa-exit-presentation-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sa-exit-presentation-btn:hover {
+  background: rgba(56, 189, 248, 0.2);
+  border-color: var(--sa-accent-cyan);
+  color: #ffffff;
+}
+
+/* ==============================================================
+   11. MODE LEGEND & HELP BADGE
+   ============================================================== */
+.sa-view-help-badge {
+  position: absolute;
+  bottom: 18px;
+  left: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--sa-font-mono);
+  font-size: 10px;
+  color: var(--sa-text-faint);
+  background: rgba(10, 15, 25, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 5px 10px;
+  border-radius: var(--sa-radius-sm);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.sa-mode-legend {
+  position: absolute;
+  top: 56px;
+  left: 18px;
+  background: rgba(10, 15, 25, 0.88);
+  border: 1px solid var(--sa-panel-border);
+  padding: 8px 12px;
+  border-radius: var(--sa-radius-md);
+  backdrop-filter: blur(10px);
+  z-index: 10;
+  font-family: var(--sa-font-mono);
+  font-size: 10.5px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  pointer-events: none;
+  max-width: 220px;
+}
+
+.sa-legend-title {
+  font-weight: 700;
+  color: var(--sa-accent-cyan);
+  text-transform: uppercase;
+  font-size: 9.5px;
+  letter-spacing: 1px;
+  margin-bottom: 2px;
+}
+
+.sa-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--sa-text-muted);
+}
+
+.sa-legend-swatch {
+  width: 12px;
+  height: 4px;
+  border-radius: 2px;
+}
+
+/* ==============================================================
+   12. MODE-SPECIFIC CONTROLS & INFOGRAPHIC CARDS
    ============================================================== */
 .sa-mode-controls-panel {
   padding: 14px 16px;
@@ -686,7 +1168,6 @@
   justify-content: space-between;
 }
 
-/* Wind Direction Selector Grid (N, NE, E, SE, S, SW, W, NW) */
 .sa-wind-dir-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -719,7 +1200,6 @@
   box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
 }
 
-/* Play/Pause/Reset Action Button Row */
 .sa-anim-controls-row {
   display: flex;
   align-items: center;
@@ -756,7 +1236,6 @@
   color: var(--sa-accent-green);
 }
 
-/* Time of Day Readout */
 .sa-time-readout {
   font-family: var(--sa-font-mono);
   font-size: 13px;
@@ -769,11 +1248,6 @@
   border-radius: var(--sa-radius-sm);
 }
 
-/* ==============================================================
-   MODE INFORMATION & INFOGRAPHIC CARD (Section 29)
-   TITLE, WHAT IS IT?, WHY IMPORTANT?, WHAT ARCHITECTS STUDY?,
-   KEY PARAMETERS, CALCULATION: COMING SOON, SOURCES
-   ============================================================== */
 .sa-info-card-container {
   padding: 14px 16px;
   display: flex;
@@ -833,7 +1307,6 @@
   font-weight: 600;
 }
 
-/* Strict Coming Soon Box (Section 30) */
 .sa-coming-soon-box {
   background: rgba(245, 158, 11, 0.05);
   border: 1px solid rgba(245, 158, 11, 0.25);
@@ -861,7 +1334,6 @@
   margin: 0;
 }
 
-/* Disclaimer Box (Section 21) */
 .sa-disclaimer-box {
   background: rgba(56, 189, 248, 0.04);
   border: 1px solid rgba(56, 189, 248, 0.2);
@@ -876,7 +1348,6 @@
   color: var(--sa-accent-cyan);
 }
 
-/* Sources & References Block (Section 31 & 33) */
 .sa-sources-box {
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.05);
@@ -909,9 +1380,9 @@
 }
 
 /* ==============================================================
-   RESPONSIVE LAYOUT (TABLET & MOBILE)
+   13. RESPONSIVE BREAKPOINTS
    ============================================================== */
-@media (max-width: 1180px) {
+@media (max-width: 1200px) {
   .sa-workspace-body {
     grid-template-columns: 260px 1fr 260px;
   }
@@ -934,21 +1405,15 @@
     border-top: 1px solid var(--sa-panel-border);
   }
 
-  .sa-camera-toolbar {
-    top: 10px;
-    right: 10px;
-    scale: 0.9;
+  .sa-viewport-toolbar {
+    top: 8px;
+    right: 8px;
+    scale: 0.85;
     transform-origin: top right;
   }
 
-  .sa-layers-toolbar {
-    bottom: 10px;
-    right: 10px;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .sa-massing-drawer {
+  .sa-massing-drawer,
+  .sa-layers-drawer {
     width: calc(100% - 32px);
     right: 16px;
     left: 16px;

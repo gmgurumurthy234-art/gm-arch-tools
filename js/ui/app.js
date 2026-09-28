@@ -11,7 +11,7 @@ import { initIntro } from '../intro.js';
 import { initModal, openToolModal } from './modal-controller.js';
 import { initAccountManager } from '../auth/account-manager.js';
 import { initWedgeCarousel, setActiveModule } from './wedge-carousel.js';
-import { initSiteAnalysisApp, selectAnalysisMode } from '../site-analysis/site-analysis-app.js';
+import { initSiteAnalysisApp, selectAnalysisMode, pauseSiteAnalysis, resumeSiteAnalysis } from '../site-analysis/site-analysis-app.js';
 
 let currentView = 'HUB'; // 'HUB' | 'CALCULATIVES' | 'SITE_ANALYSIS'
 let activeCategory = 'ALL';
@@ -30,6 +30,18 @@ export function initApp() {
   initRoadmapModal();
   initProjectsModal();
   initAboutModal();
+
+  // Expose global router for cross-module links
+  window.gmArchToolsRouter = {
+    showPlatformHub: (updateHash, viewMode) => showPlatformHub(updateHash, viewMode),
+    showArchCalculatives: (updateHash) => showArchCalculatives(updateHash),
+    showSiteAnalysis: (updateHash) => showSiteAnalysis(updateHash),
+    openRoadmapModal: (mod) => openRoadmapModal(mod),
+    openAboutModal: () => {
+      const modal = document.getElementById('about-modal-backdrop');
+      if (modal) modal.classList.add('active');
+    }
+  };
 
   // 4. Initialize Horizontal Module Wedge Carousel
   initWedgeCarousel({
@@ -62,6 +74,9 @@ export function initApp() {
    ============================================================== */
 export function showPlatformHub(updateHash = true, viewMode = 'wedges') {
   currentView = 'HUB';
+  document.body.classList.remove('site-analysis-active');
+  pauseSiteAnalysis();
+
   const hubView = document.getElementById('platform-modules-view');
   const calcView = document.getElementById('arch-calculatives-view');
   const saView = document.getElementById('site-analysis-view');
@@ -99,6 +114,9 @@ export function showPlatformHub(updateHash = true, viewMode = 'wedges') {
 
 export function showArchCalculatives(updateHash = true) {
   currentView = 'CALCULATIVES';
+  document.body.classList.remove('site-analysis-active');
+  pauseSiteAnalysis();
+
   const hubView = document.getElementById('platform-modules-view');
   const calcView = document.getElementById('arch-calculatives-view');
   const saView = document.getElementById('site-analysis-view');
@@ -119,6 +137,8 @@ export function showArchCalculatives(updateHash = true) {
 
 export function showSiteAnalysis(updateHash = true) {
   currentView = 'SITE_ANALYSIS';
+  document.body.classList.add('site-analysis-active');
+
   const hubView = document.getElementById('platform-modules-view');
   const calcView = document.getElementById('arch-calculatives-view');
   const saView = document.getElementById('site-analysis-view');
@@ -136,6 +156,7 @@ export function showSiteAnalysis(updateHash = true) {
 
   setTimeout(() => {
     initSiteAnalysisApp();
+    resumeSiteAnalysis();
   }, 40);
 
   window.scrollTo({ top: 0, behavior: 'smooth' });

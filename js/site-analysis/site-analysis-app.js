@@ -1,20 +1,28 @@
 /**
- * GM ARCH TOOLS — Site Analysis Module Coordinator
+ * GM ARCH TOOLS — Site Analysis Module Coordinator (Iteration 02)
  * Author: Guru Murthy (GM)
- * Coordinates the 3-column architectural workspace:
- *   - Left Panel (Topics 01 to 05)
- *   - Central 3D Viewport (Three.js & OrbitControls)
- *   - Right Panel (Topics 06 to 10)
- *   - Mode-specific Infographic & Information Panels
- *   - Conceptual Massing Drawer & View Controls
+ * Coordinates the 3-column architectural workstation:
+ *   - Edge-Triggered Left Navigation Drawer (Platform Hub, 13 Modules, Calculatives, About)
+ *   - Central 3D Viewport with Three.js (Fog-free, Camera Presets, Measurements)
+ *   - Top Floating Command Toolbar: FIT, TOP, ISO, PERSP, N, SUN, GRID, LAYERS, MASSING, MEASURE, PRESENTATION
+ *   - Floating Layers & Global Transparency Drawer (0%–100% sliders & toggles)
+ *   - Conceptual Massing & Synchronized Floors Drawer (Floors Counter, H = N * h, Areas)
+ *   - Interactive 3D Measurement Tool HUD
+ *   - 1-Click Presentation Mode (Hides all chrome, Esc to exit)
+ *   - Left Panel (Topics 01-05) & Right Panel (Topics 06-10) with Collapsible Layout
  */
 
 import { SITE_ANALYSIS_MODES } from './analysis-modes-data.js';
 import { SiteViewport } from './site-viewport.js';
+import { PLATFORM_MODULES } from '../data/modules-database.js';
 
 let viewportInstance = null;
 let activeModeId = '02'; // Default: Sun Path & Solar Analysis
+let isLayersDrawerOpen = false;
 let isMassingDrawerOpen = false;
+let isPresentationMode = false;
+let isLeftPanelCollapsed = false;
+let isRightPanelCollapsed = false;
 
 export function initSiteAnalysisApp() {
   const container = document.getElementById('sa-viewport-container');
@@ -31,14 +39,33 @@ export function initSiteAnalysisApp() {
   // Render Active Mode Controls & Info
   renderActiveModeDetails();
 
-  // Bind Viewport Camera Toolbar
-  bindCameraToolbar();
+  // Bind Edge Navigation Drawer
+  bindEdgeNav();
 
-  // Bind Layer Toggles
-  bindLayerToggles();
+  // Bind Viewport Floating Command Toolbar
+  bindViewportToolbar();
 
-  // Bind Massing Drawer Controls
+  // Bind Layers & Transparency Drawer
+  bindLayersDrawer();
+
+  // Bind Massing & Floors Drawer
   bindMassingDrawer();
+
+  // Bind Measurement HUD
+  bindMeasureHUD();
+
+  // Bind Presentation Mode & Collapsible Panels
+  bindPresentationAndPanels();
+
+  // Back Button to Platform Hub
+  const backBtn = document.getElementById('sa-back-btn');
+  if (backBtn) {
+    backBtn.onclick = () => {
+      if (window.gmArchToolsRouter) {
+        window.gmArchToolsRouter.showPlatformHub();
+      }
+    };
+  }
 
   // Handle Window Resize
   window.addEventListener('resize', () => {
@@ -46,8 +73,98 @@ export function initSiteAnalysisApp() {
   });
 }
 
+export function pauseSiteAnalysis() {
+  if (viewportInstance) {
+    viewportInstance.pause();
+  }
+}
+
+export function resumeSiteAnalysis() {
+  if (viewportInstance) {
+    viewportInstance.resume();
+    viewportInstance.handleResize();
+  }
+}
+
 /* ==============================================================
-   TOPIC LISTS RENDERING (LEFT: 01-05 | RIGHT: 06-10)
+   01. EDGE-TRIGGERED NAVIGATION DRAWER
+   ============================================================== */
+function bindEdgeNav() {
+  const trigger = document.getElementById('sa-edge-nav-trigger');
+  const drawer = document.getElementById('sa-edge-nav-drawer');
+  const closeBtn = document.getElementById('sa-edge-nav-close');
+
+  if (closeBtn && drawer) {
+    closeBtn.onclick = () => {
+      drawer.classList.remove('open');
+    };
+  }
+
+  // Main Section Navigation Links
+  const btnHub = document.getElementById('sa-nav-hub-btn');
+  if (btnHub) {
+    btnHub.onclick = () => {
+      if (drawer) drawer.classList.remove('open');
+      if (window.gmArchToolsRouter) window.gmArchToolsRouter.showPlatformHub();
+    };
+  }
+
+  const btnAllMods = document.getElementById('sa-nav-all-modules-btn');
+  if (btnAllMods) {
+    btnAllMods.onclick = () => {
+      if (drawer) drawer.classList.remove('open');
+      if (window.gmArchToolsRouter) window.gmArchToolsRouter.showPlatformHub();
+    };
+  }
+
+  const btnCalcs = document.getElementById('sa-nav-calculatives-btn');
+  if (btnCalcs) {
+    btnCalcs.onclick = () => {
+      if (drawer) drawer.classList.remove('open');
+      if (window.gmArchToolsRouter) window.gmArchToolsRouter.showArchCalculatives();
+    };
+  }
+
+  const btnAbout = document.getElementById('sa-nav-about-btn');
+  if (btnAbout) {
+    btnAbout.onclick = () => {
+      if (drawer) drawer.classList.remove('open');
+      if (window.gmArchToolsRouter) window.gmArchToolsRouter.openAboutModal();
+    };
+  }
+
+  // Populate 13 Modules Grid in Edge Drawer
+  const modsGrid = document.getElementById('sa-drawer-modules-grid');
+  if (modsGrid && PLATFORM_MODULES) {
+    modsGrid.innerHTML = PLATFORM_MODULES.map(m => {
+      const isCurrent = m.id === '03';
+      return `
+        <div class="sa-drawer-module-item ${isCurrent ? 'active' : ''}" data-mod-id="${m.id}">
+          <span class="sa-drawer-mod-num">${m.num}</span>
+          <span>${m.title}</span>
+        </div>
+      `;
+    }).join('');
+
+    modsGrid.querySelectorAll('.sa-drawer-module-item').forEach(el => {
+      el.onclick = () => {
+        const id = el.dataset.modId;
+        if (drawer) drawer.classList.remove('open');
+        if (id === '01' && window.gmArchToolsRouter) {
+          window.gmArchToolsRouter.showArchCalculatives();
+        } else if (id === '03') {
+          // Already here
+        } else if (window.gmArchToolsRouter) {
+          const modData = PLATFORM_MODULES.find(m => m.id === id);
+          if (modData) window.gmArchToolsRouter.openRoadmapModal(modData);
+        }
+      };
+    });
+  }
+}
+
+/* ==============================================================
+   02. TOPIC LISTS RENDERING (LEFT: 01-05 | RIGHT: 06-10)
    ============================================================== */
 function renderTopicLists() {
   const leftList = document.getElementById('sa-left-topic-list');
@@ -67,10 +184,10 @@ function renderTopicLists() {
   // Attach Click Handlers to All Topic Buttons
   const topicBtns = document.querySelectorAll('.sa-topic-btn');
   topicBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.onclick = () => {
       const modeId = btn.dataset.modeId;
       selectAnalysisMode(modeId);
-    });
+    };
   });
 }
 
@@ -91,7 +208,7 @@ function renderTopicBtn(m) {
 }
 
 /* ==============================================================
-   MODE SWITCHER (Smooth transition without scene reload)
+   03. MODE SWITCHER
    ============================================================== */
 export function selectAnalysisMode(modeId) {
   activeModeId = modeId;
@@ -139,15 +256,12 @@ function updateViewportLegend(modeData) {
 }
 
 /* ==============================================================
-   MODE DETAILS & INTERACTIVE CONTROLS RENDERING
+   04. MODE DETAILS & INTERACTIVE CONTROLS RENDERING
    ============================================================== */
 function renderActiveModeDetails() {
   const mode = SITE_ANALYSIS_MODES.find(m => m.id === activeModeId);
   if (!mode) return;
 
-  // Determine Target Panel for Details
-  // If active mode is on left (01-05), dock details under left panel
-  // If active mode is on right (06-10), dock details under right panel
   const isLeft = mode.panel === 'left';
   const targetContainer = isLeft 
     ? document.getElementById('sa-left-details-container')
@@ -170,7 +284,7 @@ function renderActiveModeDetails() {
       ${renderModeSpecificControls(mode)}
     </div>
 
-    <!-- Structured Information & Infographic Card (Section 29) -->
+    <!-- Structured Information & Infographic Card -->
     <div class="sa-info-card-container">
       
       <!-- What is it? -->
@@ -193,9 +307,9 @@ function renderActiveModeDetails() {
         </ul>
       </div>
 
-      <!-- Key Parameters -->
+      <!-- Key Parameters & Infographics -->
       <div class="sa-info-block">
-        <h4 class="sa-info-heading">KEY PARAMETERS</h4>
+        <h4 class="sa-info-heading">KEY PARAMETERS & INFOGRAPHICS</h4>
         <div class="sa-params-grid">
           ${mode.parameters.map(p => `
             <div class="sa-param-item">
@@ -213,7 +327,7 @@ function renderActiveModeDetails() {
         </div>
       ` : ''}
 
-      <!-- Strict Calculation Coming Soon Notice (Section 30 & 32) -->
+      <!-- Strict Calculation Coming Soon Notice -->
       <div class="sa-coming-soon-box">
         <div class="sa-cs-title">
           <span>🔒</span>
@@ -222,7 +336,7 @@ function renderActiveModeDetails() {
         <p class="sa-cs-desc">${mode.calculationNote}</p>
       </div>
 
-      <!-- Sources & References (Section 31 & 33) -->
+      <!-- Sources & References -->
       <div class="sa-sources-box">
         <div class="sa-sources-title">OFFICIAL SOURCES & STANDARDS</div>
         ${mode.sources.map(s => `
@@ -242,7 +356,6 @@ function renderActiveModeDetails() {
 
 function renderModeSpecificControls(mode) {
   if (mode.id === '02') {
-    // Sun Path Controls
     const sun = viewportInstance ? viewportInstance.overlays.sunState : { hour: 12, isPlaying: false, altitudeDeg: 65, azimuthDeg: 180 };
     const h = Math.floor(sun.hour);
     const m = Math.floor((sun.hour % 1) * 60);
@@ -264,9 +377,9 @@ function renderModeSpecificControls(mode) {
                value="${sun.hour}">
 
         <div style="display: flex; justify-content: space-between; font-family: var(--sa-font-mono); font-size: 9.5px; color: var(--sa-text-faint);">
-          <span>06:00 Sunrise</span>
-          <span>12:00 Noon</span>
-          <span>18:00 Sunset</span>
+          <span>06:00 Sunrise (+X)</span>
+          <span>12:00 Noon (+Z)</span>
+          <span>18:00 Sunset (-X)</span>
         </div>
 
         <div class="sa-anim-controls-row">
@@ -296,14 +409,13 @@ function renderModeSpecificControls(mode) {
   }
 
   if (mode.id === '03') {
-    // Wind Controls
     const wind = viewportInstance ? viewportInstance.overlays.windState : { direction: 'SW', speed: 1.0, isPlaying: true };
     const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
 
     return `
       <div style="display: flex; flex-direction: column; gap: 10px;">
         <div style="font-family: var(--sa-font-mono); font-size: 10px; color: var(--sa-text-muted);">
-          Select Prevailing Wind Direction:
+          Select Prevailing CFD Streamline Direction:
         </div>
 
         <div class="sa-wind-dir-grid">
@@ -317,16 +429,16 @@ function renderModeSpecificControls(mode) {
         </div>
 
         <div class="sa-field-row" style="margin-top: 4px;">
-          <span class="sa-field-label">Flow Speed</span>
+          <span class="sa-field-label">Stream Speed</span>
           <input type="range" id="sa-wind-speed-slider" class="sa-slider" min="0.3" max="2.5" step="0.1" value="${wind.speed}">
         </div>
 
         <div class="sa-anim-controls-row">
           <button type="button" class="sa-anim-btn ${wind.isPlaying ? 'playing' : ''}" id="sa-wind-play-btn">
-            <span>${wind.isPlaying ? '⏸ Pause Flow' : '▶ Play Flow'}</span>
+            <span>${wind.isPlaying ? '⏸ Pause Stream' : '▶ Play Stream'}</span>
           </button>
           <button type="button" class="sa-anim-btn" id="sa-wind-reset-btn">
-            <span>↺ Reset Particles</span>
+            <span>↺ Re-center Vectors</span>
           </button>
         </div>
       </div>
@@ -334,7 +446,6 @@ function renderModeSpecificControls(mode) {
   }
 
   if (mode.id === '04') {
-    // Orientation Controls
     const massParams = viewportInstance ? viewportInstance.massing.params : { rotation: 0 };
     return `
       <div style="display: flex; flex-direction: column; gap: 10px;">
@@ -346,161 +457,136 @@ function renderModeSpecificControls(mode) {
           </div>
         </div>
         <p style="font-size: 11px; color: var(--sa-text-muted); margin: 0; line-height: 1.4;">
-          Align building long-axis along East-West to minimize direct solar heat gain on high-exposure facades.
+          Cardinal alignment: North is along -Z. South facade faces +Z for direct winter gain.
         </p>
       </div>
     `;
   }
 
   if (mode.id === '10') {
-    // Utilities Toggles
-    const layers = viewportInstance ? viewportInstance.overlays.utilityLayers : { water: true, power: true, sewer: true, storm: true };
     return `
       <div style="display: flex; flex-direction: column; gap: 8px;">
-        <label class="sa-layer-toggle">
-          <input type="checkbox" id="util-layer-water" ${layers.water ? 'checked' : ''}>
-          <span style="color: #2563eb;">●</span>
-          <span>Potable Water Supply (Pressurized)</span>
+        <div style="font-family: var(--sa-font-mono); font-size: 10px; color: var(--sa-text-muted);">Infrastructure Traces:</div>
+        <label class="sa-layer-toggle" style="font-size: 11px;">
+          <input type="checkbox" id="util-layer-water" checked>
+          <span>Potable Water Main (Cyan)</span>
         </label>
-        <label class="sa-layer-toggle">
-          <input type="checkbox" id="util-layer-power" ${layers.power ? 'checked' : ''}>
-          <span style="color: #eab308;">●</span>
-          <span>Electrical Power (HV / Transformer)</span>
+        <label class="sa-layer-toggle" style="font-size: 11px;">
+          <input type="checkbox" id="util-layer-power" checked>
+          <span>Electrical Grid & Substation (Yellow)</span>
         </label>
-        <label class="sa-layer-toggle">
-          <input type="checkbox" id="util-layer-sewer" ${layers.sewer ? 'checked' : ''}>
-          <span style="color: #d946ef;">●</span>
-          <span>Sanitary Waste Sewer (Gravity)</span>
+        <label class="sa-layer-toggle" style="font-size: 11px;">
+          <input type="checkbox" id="util-layer-sewer" checked>
+          <span>Sanitary Sewer Network (Magenta)</span>
         </label>
-        <label class="sa-layer-toggle">
-          <input type="checkbox" id="util-layer-storm" ${layers.storm ? 'checked' : ''}>
-          <span style="color: #06b6d4;">●</span>
-          <span>Stormwater Drainage (Percolation)</span>
+        <label class="sa-layer-toggle" style="font-size: 11px;">
+          <input type="checkbox" id="util-layer-storm" checked>
+          <span>Stormwater Culvert (Dashed Cyan)</span>
         </label>
       </div>
     `;
   }
 
-  return `
-    <div style="font-size: 11px; color: var(--sa-text-muted); line-height: 1.5;">
-      Rotate and orbit the 3D viewport to inspect site relationships. Click camera buttons above to view orthogonal elevations.
-    </div>
-  `;
+  return '';
 }
 
 function bindModeSpecificControls(mode) {
   if (mode.id === '02') {
     const slider = document.getElementById('sa-sun-time-slider');
+    const display = document.getElementById('sa-sun-time-display');
     const playBtn = document.getElementById('sa-sun-play-btn');
     const resetBtn = document.getElementById('sa-sun-reset-btn');
-    const display = document.getElementById('sa-sun-time-display');
+    const altReadout = document.getElementById('sa-alt-readout');
+    const azReadout = document.getElementById('sa-az-readout');
 
     if (slider) {
-      slider.addEventListener('input', (e) => {
+      slider.oninput = (e) => {
         const val = parseFloat(e.target.value);
         if (viewportInstance && viewportInstance.overlays) {
-          viewportInstance.overlays.sunState.isPlaying = false;
           viewportInstance.overlays.setSunTime(val);
-          updateSunReadouts();
+          const sun = viewportInstance.overlays.sunState;
+          const h = Math.floor(sun.hour);
+          const m = Math.floor((sun.hour % 1) * 60);
+          if (display) display.textContent = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')} hrs`;
+          if (altReadout) altReadout.textContent = `${sun.altitudeDeg}°`;
+          if (azReadout) azReadout.textContent = `${sun.azimuthDeg}°`;
         }
-        if (playBtn) playBtn.innerHTML = '<span>▶ Play Diurnal Orbit</span>';
-      });
+      };
     }
 
     if (playBtn) {
-      playBtn.addEventListener('click', () => {
+      playBtn.onclick = () => {
         if (!viewportInstance || !viewportInstance.overlays) return;
         const sun = viewportInstance.overlays.sunState;
         sun.isPlaying = !sun.isPlaying;
         playBtn.classList.toggle('playing', sun.isPlaying);
         playBtn.innerHTML = sun.isPlaying ? '<span>⏸ Pause</span>' : '<span>▶ Play Diurnal Orbit</span>';
-      });
+      };
     }
 
     if (resetBtn) {
-      resetBtn.addEventListener('click', () => {
+      resetBtn.onclick = () => {
         if (!viewportInstance || !viewportInstance.overlays) return;
-        viewportInstance.overlays.sunState.isPlaying = false;
         viewportInstance.overlays.setSunTime(12.0);
         if (slider) slider.value = 12.0;
-        if (playBtn) {
-          playBtn.classList.remove('playing');
-          playBtn.innerHTML = '<span>▶ Play Diurnal Orbit</span>';
-        }
-        updateSunReadouts();
-      });
+        if (display) display.textContent = '12:00 hrs';
+      };
     }
 
-    // Season Preset Buttons
-    ['EQUINOX', 'SUMMER', 'WINTER'].forEach(s => {
-      const btn = document.getElementById(`season-${s.toLowerCase()}`);
+    ['equinox', 'summer', 'winter'].forEach(s => {
+      const btn = document.getElementById(`season-${s}`);
       if (btn) {
-        btn.addEventListener('click', () => {
+        btn.onclick = () => {
           document.querySelectorAll('[data-season]').forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
           if (viewportInstance && viewportInstance.overlays) {
-            viewportInstance.overlays.setSunSeason(s);
-            updateSunReadouts();
+            viewportInstance.overlays.setSeason(s.toUpperCase());
           }
-        });
+        };
       }
     });
-
-    // Helper to update readouts
-    const updateSunReadouts = () => {
-      if (!viewportInstance || !viewportInstance.overlays) return;
-      const sun = viewportInstance.overlays.sunState;
-      const h = Math.floor(sun.hour);
-      const m = Math.floor((sun.hour % 1) * 60);
-      if (display) display.textContent = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')} hrs`;
-
-      const altEl = document.getElementById('sa-alt-readout');
-      const azEl = document.getElementById('sa-az-readout');
-      if (altEl) altEl.textContent = `${sun.altitudeDeg}°`;
-      if (azEl) azEl.textContent = `${sun.azimuthDeg}°`;
-    };
   }
 
   if (mode.id === '03') {
-    // Wind Direction Buttons
-    const dirBtns = document.querySelectorAll('.sa-dir-btn');
+    const dirBtns = document.querySelectorAll('[data-wind-dir]');
     dirBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.onclick = () => {
         dirBtns.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         const dir = btn.dataset.windDir;
         if (viewportInstance && viewportInstance.overlays) {
           viewportInstance.overlays.setWindDirection(dir);
         }
-      });
+      };
     });
 
     const speedSlider = document.getElementById('sa-wind-speed-slider');
     if (speedSlider) {
-      speedSlider.addEventListener('input', (e) => {
+      speedSlider.oninput = (e) => {
+        const val = parseFloat(e.target.value);
         if (viewportInstance && viewportInstance.overlays) {
-          viewportInstance.overlays.windState.speed = parseFloat(e.target.value);
+          viewportInstance.overlays.setWindSpeed(val);
         }
-      });
+      };
     }
 
     const playBtn = document.getElementById('sa-wind-play-btn');
     if (playBtn) {
-      playBtn.addEventListener('click', () => {
+      playBtn.onclick = () => {
         if (!viewportInstance || !viewportInstance.overlays) return;
         const wind = viewportInstance.overlays.windState;
         wind.isPlaying = !wind.isPlaying;
         playBtn.classList.toggle('playing', wind.isPlaying);
-        playBtn.innerHTML = wind.isPlaying ? '<span>⏸ Pause Flow</span>' : '<span>▶ Play Flow</span>';
-      });
+        playBtn.innerHTML = wind.isPlaying ? '<span>⏸ Pause Stream</span>' : '<span>▶ Play Stream</span>';
+      };
     }
 
     const resetBtn = document.getElementById('sa-wind-reset-btn');
     if (resetBtn) {
-      resetBtn.addEventListener('click', () => {
+      resetBtn.onclick = () => {
         if (!viewportInstance || !viewportInstance.overlays) return;
         viewportInstance.overlays.setWindDirection(viewportInstance.overlays.windState.direction);
-      });
+      };
     }
   }
 
@@ -508,13 +594,13 @@ function bindModeSpecificControls(mode) {
     const orientSlider = document.getElementById('sa-orient-slider');
     const orientVal = document.getElementById('sa-orient-val');
     if (orientSlider) {
-      orientSlider.addEventListener('input', (e) => {
+      orientSlider.oninput = (e) => {
         const deg = parseFloat(e.target.value);
         if (orientVal) orientVal.textContent = `${deg}°`;
         if (viewportInstance && viewportInstance.massing) {
           viewportInstance.massing.updateParam('rotation', deg);
         }
-      });
+      };
     }
   }
 
@@ -522,116 +608,408 @@ function bindModeSpecificControls(mode) {
     ['water', 'power', 'sewer', 'storm'].forEach(k => {
       const cb = document.getElementById(`util-layer-${k}`);
       if (cb) {
-        cb.addEventListener('change', (e) => {
+        cb.onchange = (e) => {
           if (viewportInstance && viewportInstance.overlays) {
             viewportInstance.overlays.setUtilityLayer(k, e.target.checked);
           }
-        });
+        };
       }
     });
   }
 }
 
 /* ==============================================================
-   VIEWPORT CAMERA TOOLBAR (Section 9)
-   TOP, FRONT, RIGHT, LEFT, BACK, ISOMETRIC, PERSPECTIVE, RESET, FIT
+   05. FLOATING VIEWPORT COMMAND TOOLBAR
+   FIT, TOP, ISO, PERSP, N, SUN, GRID, LAYERS, MASSING, MEASURE, PRESENTATION
    ============================================================== */
-function bindCameraToolbar() {
-  const camBtns = document.querySelectorAll('.sa-cam-btn');
-  camBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const preset = btn.dataset.cam;
-      camBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      if (viewportInstance) {
-        viewportInstance.setCameraPreset(preset);
+function bindViewportToolbar() {
+  const btnFit = document.getElementById('sa-btn-fit');
+  const btnTop = document.getElementById('sa-btn-top');
+  const btnIso = document.getElementById('sa-btn-iso');
+  const btnPersp = document.getElementById('sa-btn-persp');
+  const btnNorth = document.getElementById('sa-btn-north');
+  const btnSun = document.getElementById('sa-btn-sun');
+  const btnGrid = document.getElementById('sa-btn-grid');
+  const btnLayers = document.getElementById('sa-btn-layers');
+  const btnMassing = document.getElementById('sa-btn-massing');
+  const btnMeasure = document.getElementById('sa-btn-measure');
+  const btnPresentation = document.getElementById('sa-btn-presentation');
+
+  // Camera presets
+  const camBtns = [btnTop, btnIso, btnPersp];
+  const setCamActive = (activeBtn) => {
+    camBtns.forEach(b => { if (b) b.classList.remove('active'); });
+    if (activeBtn) activeBtn.classList.add('active');
+  };
+
+  if (btnFit) {
+    btnFit.onclick = () => {
+      if (viewportInstance) viewportInstance.setCameraPreset('FIT_SITE');
+    };
+  }
+
+  if (btnTop) {
+    btnTop.onclick = () => {
+      setCamActive(btnTop);
+      if (viewportInstance) viewportInstance.setCameraPreset('TOP');
+    };
+  }
+
+  if (btnIso) {
+    btnIso.onclick = () => {
+      setCamActive(btnIso);
+      if (viewportInstance) viewportInstance.setCameraPreset('ISO');
+    };
+  }
+
+  if (btnPersp) {
+    btnPersp.onclick = () => {
+      setCamActive(btnPersp);
+      if (viewportInstance) viewportInstance.setCameraPreset('PERSP');
+    };
+  }
+
+  if (btnNorth) {
+    btnNorth.onclick = () => {
+      if (viewportInstance) viewportInstance.setCameraPreset('NORTH');
+    };
+  }
+
+  if (btnSun) {
+    btnSun.onclick = () => {
+      selectAnalysisMode('02');
+      if (viewportInstance && viewportInstance.overlays) {
+        const sun = viewportInstance.overlays.sunState;
+        sun.isPlaying = !sun.isPlaying;
+        btnSun.classList.toggle('active', sun.isPlaying);
       }
-    });
-  });
+    };
+  }
+
+  if (btnGrid) {
+    btnGrid.onclick = () => {
+      if (viewportInstance) {
+        const isVisible = viewportInstance.toggleGrid();
+        btnGrid.classList.toggle('active', isVisible);
+        const gridCb = document.getElementById('layer-vis-grid');
+        if (gridCb) gridCb.checked = isVisible;
+      }
+    };
+  }
+
+  if (btnLayers) {
+    btnLayers.onclick = () => {
+      toggleLayersDrawer();
+    };
+  }
+
+  if (btnMassing) {
+    btnMassing.onclick = () => {
+      toggleMassingDrawer();
+    };
+  }
+
+  if (btnMeasure) {
+    btnMeasure.onclick = () => {
+      if (!viewportInstance) return;
+      const willBeActive = !viewportInstance.isMeasureMode;
+      viewportInstance.setMeasureMode(willBeActive);
+      btnMeasure.classList.toggle('active', willBeActive);
+    };
+  }
+
+  if (btnPresentation) {
+    btnPresentation.onclick = () => {
+      setPresentationMode(true);
+    };
+  }
 }
 
 /* ==============================================================
-   LAYER TOGGLES (Section 37)
-   Building, Grid, North, Context, Analysis Overlay
+   06. LAYERS & GLOBAL TRANSPARENCY DRAWER
    ============================================================== */
-function bindLayerToggles() {
-  const toggles = [
-    { id: 'sa-layer-building', layer: 'building' },
-    { id: 'sa-layer-grid', layer: 'grid' },
-    { id: 'sa-layer-north', layer: 'north' },
-    { id: 'sa-layer-context', layer: 'context' },
-    { id: 'sa-layer-overlay', layer: 'overlay' }
+function toggleLayersDrawer() {
+  const drawer = document.getElementById('sa-layers-drawer');
+  const toolbarBtn = document.getElementById('sa-btn-layers');
+  if (!drawer) return;
+
+  isLayersDrawerOpen = !isLayersDrawerOpen;
+  drawer.classList.toggle('collapsed', !isLayersDrawerOpen);
+  if (toolbarBtn) toolbarBtn.classList.toggle('active', isLayersDrawerOpen);
+
+  // Close massing drawer if both were opened
+  if (isLayersDrawerOpen && isMassingDrawerOpen) {
+    toggleMassingDrawer();
+  }
+}
+
+function bindLayersDrawer() {
+  const closeBtn = document.getElementById('sa-layers-close-btn');
+  if (closeBtn) {
+    closeBtn.onclick = () => toggleLayersDrawer();
+  }
+
+  const layerKeys = [
+    'building', 'wind', 'sun', 'terrain', 'shadows',
+    'context', 'vegetation', 'roads', 'utilities', 'grid'
   ];
 
-  toggles.forEach(t => {
-    const el = document.getElementById(t.id);
-    if (el) {
-      el.addEventListener('change', (e) => {
+  layerKeys.forEach(k => {
+    const cb = document.getElementById(`layer-vis-${k}`);
+    const slider = document.getElementById(`layer-op-${k}`);
+    const valText = document.getElementById(`layer-op-val-${k}`);
+
+    if (cb) {
+      cb.onchange = (e) => {
         if (viewportInstance) {
-          viewportInstance.setLayerVisibility(t.layer, e.target.checked);
+          viewportInstance.setLayerVisibility(k, e.target.checked);
         }
-      });
+      };
+    }
+
+    if (slider) {
+      slider.oninput = (e) => {
+        const val = parseFloat(e.target.value);
+        if (valText) valText.textContent = `${Math.round(val * 100)}%`;
+        if (viewportInstance) {
+          viewportInstance.setLayerOpacity(k, val);
+        }
+      };
     }
   });
 }
 
 /* ==============================================================
-   CONCEPTUAL MASSING TOOLS DRAWER (Section 6 & 7)
+   07. CONCEPTUAL MASSING & SYNCHRONIZED FLOORS DRAWER
    ============================================================== */
-function bindMassingDrawer() {
-  const toggleBtn = document.getElementById('sa-toggle-massing-btn');
+function toggleMassingDrawer() {
   const drawer = document.getElementById('sa-massing-drawer');
-  const closeBtn = document.getElementById('sa-drawer-close-btn');
+  const toolbarBtn = document.getElementById('sa-btn-massing');
+  if (!drawer) return;
 
-  if (toggleBtn && drawer) {
-    toggleBtn.addEventListener('click', () => {
-      isMassingDrawerOpen = !isMassingDrawerOpen;
-      drawer.classList.toggle('collapsed', !isMassingDrawerOpen);
-      toggleBtn.classList.toggle('active', isMassingDrawerOpen);
-    });
+  isMassingDrawerOpen = !isMassingDrawerOpen;
+  drawer.classList.toggle('collapsed', !isMassingDrawerOpen);
+  if (toolbarBtn) toolbarBtn.classList.toggle('active', isMassingDrawerOpen);
+
+  // Close layers drawer if both opened
+  if (isMassingDrawerOpen && isLayersDrawerOpen) {
+    toggleLayersDrawer();
   }
+}
 
-  if (closeBtn && drawer) {
-    closeBtn.addEventListener('click', () => {
-      isMassingDrawerOpen = false;
-      drawer.classList.add('collapsed');
-      if (toggleBtn) toggleBtn.classList.remove('active');
-    });
+function updateMassingAreaMetrics() {
+  if (!viewportInstance || !viewportInstance.massing) return;
+  const metrics = viewportInstance.massing.getMetrics();
+
+  const fpVal = document.getElementById('sa-mass-footprint-val');
+  const buVal = document.getElementById('sa-mass-builtup-val');
+  const floorsBadge = document.getElementById('sa-floors-count-val');
+  const totalHNum = document.getElementById('sa-mass-height-num');
+  const totalHSlider = document.getElementById('sa-mass-height-slider');
+
+  if (fpVal) fpVal.textContent = `${metrics.footprint.toLocaleString()} m²`;
+  if (buVal) buVal.textContent = `${metrics.builtUp.toLocaleString()} m²`;
+  if (floorsBadge) floorsBadge.textContent = metrics.floors;
+  if (totalHNum) totalHNum.value = metrics.totalHeight.toFixed(1);
+  if (totalHSlider) totalHSlider.value = metrics.totalHeight.toFixed(1);
+}
+
+function bindMassingDrawer() {
+  const closeBtn = document.getElementById('sa-massing-close-btn');
+  if (closeBtn) {
+    closeBtn.onclick = () => toggleMassingDrawer();
   }
 
   // Shape Type Buttons
   const shapeBtns = document.querySelectorAll('.sa-shape-btn[data-shape]');
   shapeBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.onclick = () => {
       shapeBtns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       const shape = btn.dataset.shape;
       if (viewportInstance && viewportInstance.massing) {
         viewportInstance.massing.setShapeType(shape);
+        updateMassingAreaMetrics();
       }
-    });
+    };
   });
 
-  // Numeric & Slider Synchronized Inputs
-  const fields = ['length', 'width', 'height', 'posX', 'posZ', 'rotation'];
-  fields.forEach(field => {
-    const slider = document.getElementById(`sa-mass-${field}-slider`);
-    const numInput = document.getElementById(`sa-mass-${field}-num`);
+  // Floors Stepper [−] [+]
+  const decBtn = document.getElementById('sa-floor-decrement-btn');
+  const incBtn = document.getElementById('sa-floor-increment-btn');
 
-    if (slider && numInput) {
-      slider.addEventListener('input', (e) => {
-        numInput.value = e.target.value;
-        if (viewportInstance && viewportInstance.massing) {
-          viewportInstance.massing.updateParam(field, e.target.value);
+  if (decBtn) {
+    decBtn.onclick = () => {
+      if (viewportInstance && viewportInstance.massing) {
+        const cur = viewportInstance.massing.params.floors;
+        if (cur > 1) {
+          viewportInstance.massing.setFloors(cur - 1);
+          updateMassingAreaMetrics();
         }
-      });
+      }
+    };
+  }
 
-      numInput.addEventListener('input', (e) => {
-        slider.value = e.target.value;
-        if (viewportInstance && viewportInstance.massing) {
-          viewportInstance.massing.updateParam(field, e.target.value);
+  if (incBtn) {
+    incBtn.onclick = () => {
+      if (viewportInstance && viewportInstance.massing) {
+        const cur = viewportInstance.massing.params.floors;
+        if (cur < 25) {
+          viewportInstance.massing.setFloors(cur + 1);
+          updateMassingAreaMetrics();
         }
-      });
+      }
+    };
+  }
+
+  // Floor Height Slider & Input
+  const fHeightSlider = document.getElementById('sa-mass-floorHeight-slider');
+  const fHeightNum = document.getElementById('sa-mass-floorHeight-num');
+  if (fHeightSlider && fHeightNum) {
+    const handleFHeight = (val) => {
+      fHeightSlider.value = val;
+      fHeightNum.value = val;
+      if (viewportInstance && viewportInstance.massing) {
+        viewportInstance.massing.setFloorHeight(val);
+        updateMassingAreaMetrics();
+      }
+    };
+    fHeightSlider.oninput = (e) => handleFHeight(e.target.value);
+    fHeightNum.oninput = (e) => handleFHeight(e.target.value);
+  }
+
+  // Total Height Slider & Input
+  const totalHSlider = document.getElementById('sa-mass-height-slider');
+  const totalHNum = document.getElementById('sa-mass-height-num');
+  if (totalHSlider && totalHNum) {
+    const handleTotalH = (val) => {
+      totalHSlider.value = val;
+      totalHNum.value = val;
+      if (viewportInstance && viewportInstance.massing) {
+        viewportInstance.massing.setTotalHeight(val);
+        updateMassingAreaMetrics();
+      }
+    };
+    totalHSlider.oninput = (e) => handleTotalH(e.target.value);
+    totalHNum.oninput = (e) => handleTotalH(e.target.value);
+  }
+
+  // Dimensions & Transformation Inputs
+  const fields = ['length', 'width', 'posX', 'posZ', 'rotation'];
+  fields.forEach(f => {
+    const slider = document.getElementById(`sa-mass-${f}-slider`);
+    const num = document.getElementById(`sa-mass-${f}-num`);
+
+    if (slider && num) {
+      const handleField = (val) => {
+        slider.value = val;
+        num.value = val;
+        if (viewportInstance && viewportInstance.massing) {
+          viewportInstance.massing.updateParam(f, val);
+          updateMassingAreaMetrics();
+        }
+      };
+      slider.oninput = (e) => handleField(e.target.value);
+      num.oninput = (e) => handleField(e.target.value);
     }
   });
+
+  // Initial metrics update
+  updateMassingAreaMetrics();
+}
+
+/* ==============================================================
+   08. MEASUREMENT TOOL HUD
+   ============================================================== */
+function bindMeasureHUD() {
+  const clearBtn = document.getElementById('sa-measure-clear-btn');
+  const exitBtn = document.getElementById('sa-measure-exit-btn');
+  const toolbarMeasureBtn = document.getElementById('sa-btn-measure');
+
+  if (clearBtn) {
+    clearBtn.onclick = () => {
+      if (viewportInstance) viewportInstance.clearMeasurement();
+    };
+  }
+
+  if (exitBtn) {
+    exitBtn.onclick = () => {
+      if (viewportInstance) {
+        viewportInstance.setMeasureMode(false);
+        if (toolbarMeasureBtn) toolbarMeasureBtn.classList.remove('active');
+      }
+    };
+  }
+}
+
+/* ==============================================================
+   09. PRESENTATION MODE & COLLAPSIBLE PANELS
+   ============================================================== */
+function setPresentationMode(active) {
+  isPresentationMode = active;
+  const view = document.getElementById('site-analysis-view');
+  if (view) {
+    view.classList.toggle('presentation-mode-active', active);
+  }
+
+  setTimeout(() => {
+    if (viewportInstance) viewportInstance.handleResize();
+  }, 60);
+}
+
+function bindPresentationAndPanels() {
+  // Exit Presentation Button
+  const exitPresBtn = document.getElementById('sa-exit-presentation-btn');
+  if (exitPresBtn) {
+    exitPresBtn.onclick = () => setPresentationMode(false);
+  }
+
+  // Global Escape Key
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (isPresentationMode) {
+        setPresentationMode(false);
+      }
+      if (viewportInstance && viewportInstance.isMeasureMode) {
+        viewportInstance.setMeasureMode(false);
+        const btnMeasure = document.getElementById('sa-btn-measure');
+        if (btnMeasure) btnMeasure.classList.remove('active');
+      }
+    }
+  });
+
+  // Collapsible Side Panels
+  const wsBody = document.getElementById('sa-workspace-body');
+  const leftPanel = document.getElementById('sa-left-panel');
+  const rightPanel = document.getElementById('sa-right-panel');
+
+  const btnToggleLeft = document.getElementById('sa-toggle-left-btn');
+  const btnCollapseLeft = document.getElementById('sa-left-collapse-btn');
+  const btnToggleRight = document.getElementById('sa-toggle-right-btn');
+  const btnCollapseRight = document.getElementById('sa-right-collapse-btn');
+
+  const toggleLeft = () => {
+    isLeftPanelCollapsed = !isLeftPanelCollapsed;
+    if (leftPanel) leftPanel.classList.toggle('collapsed', isLeftPanelCollapsed);
+    if (wsBody) wsBody.classList.toggle('left-collapsed', isLeftPanelCollapsed);
+    if (btnToggleLeft) btnToggleLeft.classList.toggle('active', isLeftPanelCollapsed);
+    setTimeout(() => {
+      if (viewportInstance) viewportInstance.handleResize();
+    }, 60);
+  };
+
+  const toggleRight = () => {
+    isRightPanelCollapsed = !isRightPanelCollapsed;
+    if (rightPanel) rightPanel.classList.toggle('collapsed', isRightPanelCollapsed);
+    if (wsBody) wsBody.classList.toggle('right-collapsed', isRightPanelCollapsed);
+    if (btnToggleRight) btnToggleRight.classList.toggle('active', isRightPanelCollapsed);
+    setTimeout(() => {
+      if (viewportInstance) viewportInstance.handleResize();
+    }, 60);
+  };
+
+  if (btnToggleLeft) btnToggleLeft.onclick = toggleLeft;
+  if (btnCollapseLeft) btnCollapseLeft.onclick = toggleLeft;
+  if (btnToggleRight) btnToggleRight.onclick = toggleRight;
+  if (btnCollapseRight) btnCollapseRight.onclick = toggleRight;
 }

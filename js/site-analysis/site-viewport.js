@@ -1,12 +1,13 @@
 /**
- * GM ARCH TOOLS — 3D Site Analysis Viewport Engine
+ * GM ARCH TOOLS — 3D Site Analysis Viewport Engine (Iteration 02)
  * Author: Guru Murthy (GM)
  * Central architectural 3D environment with Three.js & OrbitControls:
- *   - Clean architectural drafting grid & CAD axes
- *   - True North 3D gizmo
- *   - Site boundary perimeter
- *   - Camera presets: TOP, FRONT, RIGHT, LEFT, BACK, ISOMETRIC, PERSPECTIVE, RESET, FIT
- *   - Responsive rendering & smooth camera interpolation
+ *   - Zero Fog Washout: Crystal-clear, high-contrast drafting linework at any zoom distance
+ *   - High Performance: Active RAF loop pausing when navigating outside Site Analysis
+ *   - Camera Presets: FIT_SITE, FIT_BUILDING, TOP, NORTH, SOUTH, EAST, WEST, ISO, PERSP, RESET
+ *   - Interactive 3D Measurement Tool: Raycasting ground & massing with live dimension HUD
+ *   - Master Layer Control & Opacity passthroughs to Massing and Analysis Overlays
+ *   - Dynamic True North Gyro Compass Gizmo
  */
 
 import { MassingController } from './massing-controller.js';
@@ -28,24 +29,40 @@ export class SiteViewport {
     this.controls = null;
     this.clock = new THREE.Clock();
 
+    // Measurement Tool State
+    this.isMeasureMode = false;
+    this.measurePoints = [];
+    this.measureGroup = null;
+    this.raycaster = new THREE.Raycaster();
+    this.mouse = new THREE.Vector2();
+
     // Layers & Subsystems
     this.gridHelper = null;
     this.axisHelper = null;
     this.boundaryLine = null;
+    this.groundMesh = null;
     this.massing = null;
     this.overlays = null;
 
-    // Layer Visibilities
+    // Layer Visibilities & Opacities
     this.layers = {
-      building: true,
-      grid: true,
-      north: true,
-      context: true,
-      overlay: true
+      building: { visible: true, opacity: 0.85 },
+      grid: { visible: true, opacity: 0.8 },
+      north: { visible: true, opacity: 1.0 },
+      site: { visible: true, opacity: 0.9 },
+      wind: { visible: true, opacity: 0.85 },
+      sun: { visible: true, opacity: 0.9 },
+      terrain: { visible: true, opacity: 0.75 },
+      shadows: { visible: true, opacity: 0.45 },
+      context: { visible: true, opacity: 0.4 },
+      vegetation: { visible: true, opacity: 0.9 },
+      roads: { visible: true, opacity: 0.9 },
+      utilities: { visible: true, opacity: 0.9 },
+      graphics: { visible: true, opacity: 0.85 }
     };
 
     // Camera Presets
-    this.defaultCamPos = new THREE.Vector3(38, 32, 48);
+    this.defaultCamPos = new THREE.Vector3(38, 30, 46);
     this.defaultTarget = new THREE.Vector3(0, 4, 0);
 
     this.initScene();
@@ -54,6 +71,7 @@ export class SiteViewport {
     this.initControls();
     this.initEnvironment();
     this.initSubsystems();
+    this.initMeasureTool();
 
     // Start Rendering Loop
     this.animate = this.animate.bind(this);
@@ -65,11 +83,13 @@ export class SiteViewport {
     this.resizeObserver.observe(this.container);
   }
 
+  /* ==============================================================
+     SCENE INITIALIZATION (FOG COMPLETELY REMOVED FOR MAXIMUM CLARITY)
+     ============================================================== */
   initScene() {
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x06090f);
-    // Subtle architectural horizon fog
-    this.scene.fog = new THREE.FogExp2(0x06090f, 0.008);
+    // Explicitly NO FOG: Prevents any washout or fading when zooming out in large architectural views
   }
 
   initCamera() {
@@ -77,7 +97,7 @@ export class SiteViewport {
       45,
       this.width / this.height,
       0.5,
-      500
+      1200
     );
     this.camera.position.copy(this.defaultCamPos);
   }
@@ -105,8 +125,8 @@ export class SiteViewport {
     this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.08;
     this.controls.maxPolarAngle = Math.PI / 2 + 0.02; // Allow slightly below horizon
-    this.controls.minDistance = 6;
-    this.controls.maxDistance = 220;
+    this.controls.minDistance = 4;
+    this.controls.maxDistance = 500;
     this.controls.target.copy(this.defaultTarget);
 
     // Sync North Gizmo rotation when orbiting
@@ -115,32 +135,36 @@ export class SiteViewport {
 
   initEnvironment() {
     // 1. Ambient Lighting (Architectural Neutral)
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
     this.scene.add(ambientLight);
 
-    // Subtle Fill Light from Opposite Side
-    const fillLight = new THREE.DirectionalLight(0x38bdf8, 0.4);
-    fillLight.position.set(-30, 20, -30);
+    // Subtle Fill Light
+    const fillLight = new THREE.DirectionalLight(0x38bdf8, 0.45);
+    fillLight.position.set(-35, 25, -35);
     this.scene.add(fillLight);
 
     // 2. Architectural Ground Grid (10m Major, 2m Minor)
-    const gridSize = 100;
-    const gridDivisions = 50;
+    const gridSize = 120;
+    const gridDivisions = 60;
     this.gridHelper = new THREE.GridHelper(gridSize, gridDivisions, 0x38bdf8, 0x1e293b);
     this.gridHelper.position.y = 0.01;
+    this.gridHelper.material.transparent = true;
+    this.gridHelper.material.opacity = 0.8;
     this.scene.add(this.gridHelper);
 
-    // 3. Ground Plane for Shadow Catching
-    const groundGeom = new THREE.PlaneGeometry(120, 120);
+    // 3. Ground Plane for Shadow Catching & Measurement Raycasting
+    const groundGeom = new THREE.PlaneGeometry(160, 160);
     const groundMat = new THREE.ShadowMaterial({ opacity: 0.45 });
-    const groundMesh = new THREE.Mesh(groundGeom, groundMat);
-    groundMesh.rotation.x = -Math.PI / 2;
-    groundMesh.receiveShadow = true;
-    this.scene.add(groundMesh);
+    this.groundMesh = new THREE.Mesh(groundGeom, groundMat);
+    this.groundMesh.rotation.x = -Math.PI / 2;
+    this.groundMesh.receiveShadow = true;
+    this.groundMesh.name = 'GroundPlane';
+    this.scene.add(this.groundMesh);
 
     // 4. Site Boundary Outline (Dashed CAD Polygon, 50m x 40m)
-    const bW = 25; // half width (50m)
-    const bD = 20; // half depth (40m)
+    // Coords: X: -25 to +25, Z: -20 to +20
+    const bW = 25;
+    const bD = 20;
     const boundaryPoints = [
       new THREE.Vector3(-bW, 0.05, -bD),
       new THREE.Vector3(bW, 0.05, -bD),
@@ -153,14 +177,17 @@ export class SiteViewport {
       color: 0x38bdf8,
       dashSize: 2.5,
       gapSize: 1.5,
-      linewidth: 2
+      linewidth: 2,
+      transparent: true,
+      opacity: 0.9
     });
     this.boundaryLine = new THREE.Line(boundaryGeom, boundaryMat);
     this.boundaryLine.computeLineDistances();
+    this.boundaryLine.name = 'SiteBoundaryLine';
     this.scene.add(this.boundaryLine);
 
     // 5. Origin Axes (X: Red, Y: Green, Z: Blue)
-    this.axisHelper = new THREE.AxesHelper(12);
+    this.axisHelper = new THREE.AxesHelper(14);
     this.axisHelper.position.set(0, 0.05, 0);
     this.scene.add(this.axisHelper);
   }
@@ -174,63 +201,192 @@ export class SiteViewport {
   }
 
   /* ==============================================================
-     CAMERA PRESET COMMANDS (Section 9)
-     TOP, FRONT, RIGHT, LEFT, BACK, ISOMETRIC, PERSPECTIVE, RESET, FIT
+     INTERACTIVE 3D MEASUREMENT TOOL
+     ============================================================== */
+  initMeasureTool() {
+    this.measureGroup = new THREE.Group();
+    this.measureGroup.name = 'MeasurementToolGroup';
+    this.scene.add(this.measureGroup);
+
+    // Click handler on renderer domElement
+    this.renderer.domElement.addEventListener('click', (e) => {
+      if (!this.isMeasureMode) return;
+      this.handleMeasureClick(e);
+    });
+  }
+
+  setMeasureMode(active) {
+    this.isMeasureMode = active;
+    if (this.renderer && this.renderer.domElement) {
+      this.renderer.domElement.style.cursor = active ? 'crosshair' : 'grab';
+    }
+    const hud = document.getElementById('sa-measure-hud');
+    if (hud) hud.style.display = active ? 'flex' : 'none';
+
+    if (!active) {
+      this.clearMeasurement();
+    }
+  }
+
+  handleMeasureClick(event) {
+    const rect = this.renderer.domElement.getBoundingClientRect();
+    this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+    this.raycaster.setFromCamera(this.mouse, this.camera);
+    const intersects = this.raycaster.intersectObjects([this.groundMesh, this.massing.mesh].filter(Boolean), true);
+
+    if (intersects.length > 0) {
+      const pt = intersects[0].point.clone();
+      pt.y += 0.05; // Slightly above surface
+      this.measurePoints.push(pt);
+
+      this.renderMeasurementGraphics();
+
+      if (this.measurePoints.length >= 2) {
+        // Distance calculated
+        const p1 = this.measurePoints[0];
+        const p2 = this.measurePoints[1];
+        const dist = p1.distanceTo(p2);
+
+        const valEl = document.getElementById('sa-measure-dist-val');
+        if (valEl) valEl.textContent = `${dist.toFixed(2)} m`;
+
+        // Reset for next pair on subsequent clicks
+        this.measurePoints = [];
+      }
+    }
+  }
+
+  renderMeasurementGraphics() {
+    // Clear old visual markers
+    while (this.measureGroup.children.length > 0) {
+      const obj = this.measureGroup.children[0];
+      this.measureGroup.remove(obj);
+      if (obj.geometry) obj.geometry.dispose();
+    }
+
+    if (this.measurePoints.length === 1) {
+      // First point marker
+      const markerGeom = new THREE.SphereGeometry(0.35, 16, 16);
+      const markerMat = new THREE.MeshBasicMaterial({ color: 0x00f2fe });
+      const marker = new THREE.Mesh(markerGeom, markerMat);
+      marker.position.copy(this.measurePoints[0]);
+      this.measureGroup.add(marker);
+    } else if (this.measurePoints.length >= 2) {
+      const p1 = this.measurePoints[0];
+      const p2 = this.measurePoints[1];
+
+      // End sphere markers
+      [p1, p2].forEach(p => {
+        const markerGeom = new THREE.SphereGeometry(0.35, 16, 16);
+        const markerMat = new THREE.MeshBasicMaterial({ color: 0x00f2fe });
+        const marker = new THREE.Mesh(markerGeom, markerMat);
+        marker.position.copy(p);
+        this.measureGroup.add(marker);
+      });
+
+      // Connecting Dimension Line
+      const lineGeom = new THREE.BufferGeometry().setFromPoints([p1, p2]);
+      const lineMat = new THREE.LineDashedMaterial({
+        color: 0x00f2fe,
+        dashSize: 0.8,
+        gapSize: 0.4,
+        linewidth: 2
+      });
+      const dimLine = new THREE.Line(lineGeom, lineMat);
+      dimLine.computeLineDistances();
+      this.measureGroup.add(dimLine);
+    }
+  }
+
+  clearMeasurement() {
+    this.measurePoints = [];
+    while (this.measureGroup.children.length > 0) {
+      const obj = this.measureGroup.children[0];
+      this.measureGroup.remove(obj);
+      if (obj.geometry) obj.geometry.dispose();
+    }
+    const valEl = document.getElementById('sa-measure-dist-val');
+    if (valEl) valEl.textContent = '0.00 m';
+  }
+
+  /* ==============================================================
+     CAMERA PRESET COMMANDS
+     FIT_SITE, FIT_BUILDING, TOP, NORTH, SOUTH, EAST, WEST, ISO, PERSP, RESET
      ============================================================== */
   setCameraPreset(preset) {
     if (!this.controls) return;
 
     const bounds = this.massing.getBounds();
     const target = bounds.center.clone();
-    const d = 55;
+    const d = 52;
 
     switch (preset) {
       case 'TOP':
-        this.animateCameraTo(new THREE.Vector3(target.x, target.y + d, target.z + 0.01), target);
+        // Plan view looking straight down from +Y
+        this.animateCameraTo(new THREE.Vector3(target.x, target.y + 70, target.z + 0.001), new THREE.Vector3(target.x, 0, target.z));
         break;
+
+      case 'NORTH':
       case 'FRONT':
-        // Looking from South (+Z) towards North (-Z)
-        this.animateCameraTo(new THREE.Vector3(target.x, target.y + 10, target.z + d), target);
+        // View looking towards North (-Z), camera at South (+Z)
+        this.animateCameraTo(new THREE.Vector3(target.x, target.y + 14, target.z + d), target);
         break;
+
+      case 'SOUTH':
       case 'BACK':
-        // Looking from North (-Z) towards South (+Z)
-        this.animateCameraTo(new THREE.Vector3(target.x, target.y + 10, target.z - d), target);
+        // View looking towards South (+Z), camera at North (-Z)
+        this.animateCameraTo(new THREE.Vector3(target.x, target.y + 14, target.z - d), target);
         break;
-      case 'RIGHT':
-        // Looking from East (+X)
-        this.animateCameraTo(new THREE.Vector3(target.x + d, target.y + 10, target.z), target);
-        break;
+
+      case 'EAST':
       case 'LEFT':
-        // Looking from West (-X)
-        this.animateCameraTo(new THREE.Vector3(target.x - d, target.y + 10, target.z), target);
+        // View looking towards East (+X), camera at West (-X)
+        this.animateCameraTo(new THREE.Vector3(target.x - d, target.y + 14, target.z), target);
         break;
+
+      case 'WEST':
+      case 'RIGHT':
+        // View looking towards West (-X), camera at East (+X)
+        this.animateCameraTo(new THREE.Vector3(target.x + d, target.y + 14, target.z), target);
+        break;
+
+      case 'ISO':
       case 'ISOMETRIC':
         // Classic 45° isometric axonometric view
-        this.animateCameraTo(new THREE.Vector3(target.x + 40, target.y + 40, target.z + 40), target);
+        this.animateCameraTo(new THREE.Vector3(target.x + 38, target.y + 36, target.z + 38), target);
         break;
+
+      case 'PERSP':
       case 'PERSPECTIVE':
-        // Normal eye-level perspective
-        this.animateCameraTo(new THREE.Vector3(target.x + 35, target.y + 14, target.z + 35), target);
+        // Eye-level architectural perspective
+        this.animateCameraTo(new THREE.Vector3(target.x + 32, target.y + 12, target.z + 32), target);
         break;
+
+      case 'FIT_BUILDING':
+        // Tightly zoom and center on building massing
+        {
+          const maxDim = Math.max(bounds.size.x, bounds.size.y, bounds.size.z, 15);
+          const distance = maxDim * 2.2;
+          const dir = new THREE.Vector3().subVectors(this.camera.position, this.controls.target).normalize();
+          if (dir.lengthSq() < 0.001) dir.set(1, 0.8, 1).normalize();
+          const newPos = target.clone().add(dir.multiplyScalar(distance));
+          this.animateCameraTo(newPos, target);
+        }
+        break;
+
+      case 'FIT_SITE':
       case 'FIT':
-        this.fitModel();
+        // Frame entire site boundary
+        this.animateCameraTo(new THREE.Vector3(0, 36, 56), new THREE.Vector3(0, 2, 0));
         break;
+
       case 'RESET':
       default:
         this.animateCameraTo(this.defaultCamPos.clone(), this.defaultTarget.clone());
         break;
     }
-  }
-
-  fitModel() {
-    const bounds = this.massing.getBounds();
-    const target = bounds.center.clone();
-    const maxDim = Math.max(bounds.size.x, bounds.size.y, bounds.size.z, 20);
-    const distance = maxDim * 2.5;
-
-    const dir = new THREE.Vector3().subVectors(this.camera.position, this.controls.target).normalize();
-    const newPos = target.clone().add(dir.multiplyScalar(distance));
-    this.animateCameraTo(newPos, target);
   }
 
   animateCameraTo(targetPos, targetLookAt) {
@@ -239,7 +395,7 @@ export class SiteViewport {
     const startPos = this.camera.position.clone();
     const startTarget = this.controls.target.clone();
     const startTime = performance.now();
-    const duration = 500; // ms
+    const duration = 450; // Smooth 450ms interpolation
 
     const step = (now) => {
       const elapsed = now - startTime;
@@ -250,6 +406,7 @@ export class SiteViewport {
       this.camera.position.lerpVectors(startPos, targetPos, ease);
       this.controls.target.lerpVectors(startTarget, targetLookAt, ease);
       this.controls.update();
+      this.updateNorthGizmo();
 
       if (progress < 1) {
         requestAnimationFrame(step);
@@ -262,10 +419,9 @@ export class SiteViewport {
     const arrow = document.getElementById('sa-north-arrow');
     if (!arrow) return;
 
-    // Calculate camera horizontal bearing (yaw) relative to North (-Z)
+    // Calculate camera yaw relative to North (-Z)
     const dir = new THREE.Vector3();
     this.camera.getWorldDirection(dir);
-    // Angle in degrees in X-Z plane
     const angleRad = Math.atan2(dir.x, -dir.z);
     const angleDeg = (angleRad * 180) / Math.PI;
 
@@ -273,36 +429,90 @@ export class SiteViewport {
   }
 
   /* ==============================================================
-     LAYER TOGGLES (Section 37)
-     Building, Grid, North, Context, Analysis Overlay
+     MASTER LAYER CONTROL & TRANSPARENCY
      ============================================================== */
   setLayerVisibility(layer, isVisible) {
-    this.layers[layer] = isVisible;
+    if (this.layers[layer]) {
+      this.layers[layer].visible = isVisible;
+    }
 
     if (layer === 'building' && this.massing) {
       this.massing.setVisible(isVisible);
     }
     if (layer === 'grid' && this.gridHelper) {
       this.gridHelper.visible = isVisible;
-      this.axisHelper.visible = isVisible;
+      if (this.axisHelper) this.axisHelper.visible = isVisible;
     }
     if (layer === 'north') {
       const gizmo = document.getElementById('sa-north-gizmo');
       if (gizmo) gizmo.style.display = isVisible ? 'flex' : 'none';
     }
-    if (layer === 'context' && this.overlays) {
-      const ctxGrp = this.overlays.groups['04'];
-      if (ctxGrp) ctxGrp.visible = isVisible;
+    if (layer === 'site' && this.boundaryLine) {
+      this.boundaryLine.visible = isVisible;
     }
-    if (layer === 'overlay' && this.overlays) {
-      this.overlays.setVisible(isVisible);
+    if (layer === 'shadows' && this.groundMesh) {
+      this.groundMesh.visible = isVisible;
     }
+    if (this.overlays) {
+      this.overlays.setLayerVisibility(layer, isVisible);
+    }
+  }
+
+  setLayerOpacity(layer, opacityVal) {
+    const op = Math.max(0, Math.min(1, parseFloat(opacityVal)));
+    if (this.layers[layer]) {
+      this.layers[layer].opacity = op;
+    }
+
+    if (layer === 'building' && this.massing) {
+      this.massing.setOpacity(op);
+    }
+    if (layer === 'grid' && this.gridHelper) {
+      this.gridHelper.material.opacity = op;
+    }
+    if (layer === 'site' && this.boundaryLine) {
+      this.boundaryLine.material.opacity = op;
+    }
+    if (layer === 'shadows' && this.groundMesh) {
+      this.groundMesh.material.opacity = 0.45 * op;
+    }
+    if (this.overlays) {
+      this.overlays.setLayerOpacity(layer, op);
+    }
+  }
+
+  toggleGrid() {
+    const current = this.layers.grid.visible;
+    this.setLayerVisibility('grid', !current);
+    return !current;
+  }
+
+  toggleNorth() {
+    const current = this.layers.north.visible;
+    this.setLayerVisibility('north', !current);
+    return !current;
+  }
+
+  /* ==============================================================
+     LIFECYCLE & PERFORMANCE MANAGEMENT
+     ============================================================== */
+  pause() {
+    this.isRendering = false;
+  }
+
+  resume() {
+    if (this.isRendering) return;
+    this.isRendering = true;
+    this.clock.getDelta(); // flush accumulated delta
+    requestAnimationFrame(this.animate);
   }
 
   handleResize() {
     if (!this.container || !this.renderer || !this.camera) return;
     this.width = this.container.clientWidth;
     this.height = this.container.clientHeight;
+
+    if (this.width === 0 || this.height === 0) return;
 
     this.camera.aspect = this.width / this.height;
     this.camera.updateProjectionMatrix();
