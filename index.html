@@ -28,6 +28,7 @@
   <link rel="stylesheet" href="styles/tools.css">
   <link rel="stylesheet" href="styles/unit-converter.css">
   <link rel="stylesheet" href="styles/site-analysis.css">
+  <link rel="stylesheet" href="styles/basic-tools.css">
 </head>
 <body>
 
@@ -312,6 +313,10 @@
                 <span>📐</span>
                 <span>Arch Calculatives (35)</span>
               </button>
+              <button type="button" class="sa-drawer-link-btn" id="sa-nav-basic-btn">
+                <span>🛠️</span>
+                <span>13 · Basic Tools</span>
+              </button>
               <button type="button" class="sa-drawer-link-btn" id="sa-nav-about-btn">
                 <span>ℹ️</span>
                 <span>About GM Arch Tools</span>
@@ -332,7 +337,7 @@
                 <span>Platform Hub</span>
               </button>
               <div class="sa-title-block">
-                <span class="sa-title-tag">MODULE 03 / 13 · 3D ENVIRONMENTAL LABORATORY</span>
+                <span class="sa-title-tag">MODULE 02 / 13 · 3D ENVIRONMENTAL LABORATORY</span>
                 <h2 class="sa-title-main">SITE ANALYSIS WORKSPACE</h2>
               </div>
             </div>
@@ -677,6 +682,108 @@
             </aside>
 
           </div>
+        </section>
+
+        <!-- ============================================================
+             VIEW 4: MODULE 13 — BASIC TOOLS WORKSPACE
+             (Import, Export, Unit Converter, Measurement, Image Reference, Settings, 35 Calculatives)
+             ============================================================ -->
+        <section id="basic-tools-view" class="portal-view basic-tools-view" aria-label="Basic Tools Workspace">
+
+          <!-- Edge-Trigger Hotzone on the Far Left Edge -->
+          <div class="sa-edge-nav-trigger" id="bt-edge-nav-trigger" title="Hover for Navigation Drawer"></div>
+
+          <!-- Edge-Triggered Navigation Drawer Overlay -->
+          <aside class="sa-edge-nav-drawer" id="bt-edge-nav-drawer" aria-label="Quick Platform Navigation">
+            <div class="sa-drawer-brand">
+              <div>
+                <div class="sa-drawer-brand-title">GM ARCH TOOLS</div>
+                <div class="sa-drawer-brand-sub">Platform Navigation</div>
+              </div>
+              <button type="button" class="sa-drawer-close" id="bt-edge-nav-close" title="Close Drawer">✕</button>
+            </div>
+
+            <div class="sa-drawer-section-title">Core Sections</div>
+            <div class="sa-drawer-links">
+              <button type="button" class="sa-drawer-link-btn" id="bt-nav-hub-btn">
+                <span>🏛️</span>
+                <span>Home (13 Modules)</span>
+              </button>
+              <button type="button" class="sa-drawer-link-btn" id="bt-nav-site-btn">
+                <span>🧭</span>
+                <span>02 · Site Analysis</span>
+              </button>
+              <button type="button" class="sa-drawer-link-btn active" id="bt-nav-basic-btn">
+                <span>🛠️</span>
+                <span>13 · Basic Tools</span>
+              </button>
+              <button type="button" class="sa-drawer-link-btn" id="bt-nav-about-btn">
+                <span>ℹ️</span>
+                <span>About GM Arch Tools</span>
+              </button>
+            </div>
+
+            <div class="sa-drawer-section-title">All 13 Modules</div>
+            <div class="sa-drawer-modules-grid" id="bt-drawer-modules-grid">
+              <!-- Populated dynamically -->
+            </div>
+          </aside>
+
+          <!-- Top Header Bar -->
+          <div class="bt-header-bar">
+            <div class="bt-header-left">
+              <button type="button" class="bt-back-btn" id="bt-back-btn" title="Return to Platform Hub">
+                <span>←</span>
+                <span>Platform Hub</span>
+              </button>
+              <div class="bt-title-block">
+                <span class="bt-title-tag">MODULE 13 / 13 · ARCHITECTURAL UTILITIES</span>
+                <h2 class="bt-title-main">BASIC TOOLS WORKSPACE</h2>
+              </div>
+            </div>
+
+            <div class="bt-header-center">
+              <div class="bt-mode-pill" id="bt-mode-indicator">
+                <span class="bt-indicator-dot"></span>
+                <span id="bt-mode-indicator-text">TOOL 01: IMPORT</span>
+              </div>
+            </div>
+
+            <div class="bt-header-right">
+              <span class="bt-status-badge">File I/O &amp; Utilities</span>
+            </div>
+          </div>
+
+          <!-- 3-Column Workspace Main Stage (Left: Tools List | Center: Stage | Right: Assets) -->
+          <div class="bt-workspace-body">
+            <!-- Left Tools Nav Rail -->
+            <aside class="bt-tools-nav-rail" aria-label="Basic Tools Navigation">
+              <div class="bt-rail-header">
+                <h3 class="bt-rail-title">UTILITY TOOLS</h3>
+                <span style="font-family: var(--bt-font-mono); font-size: 10px; color: var(--bt-text-muted);">01 — 07</span>
+              </div>
+              <ul class="bt-tools-list" id="bt-tools-list">
+                <!-- Populated dynamically -->
+              </ul>
+            </aside>
+
+            <!-- Center Tool Workstation Stage -->
+            <main class="bt-stage-area" id="bt-stage-container" aria-label="Active Utility Tool Area">
+              <!-- Populated dynamically -->
+            </main>
+
+            <!-- Right Imported Assets Manager -->
+            <aside class="bt-assets-panel" aria-label="Project Imported Assets">
+              <div class="bt-assets-header">
+                <h3 class="bt-rail-title">IMPORTED ASSETS</h3>
+                <span class="bt-assets-count" id="bt-assets-count">0 ASSETS</span>
+              </div>
+              <ul class="bt-assets-list" id="bt-assets-list">
+                <!-- Populated dynamically -->
+              </ul>
+            </aside>
+          </div>
+
         </section>
 
       </div>

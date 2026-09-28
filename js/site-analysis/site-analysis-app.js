@@ -117,11 +117,26 @@ function bindEdgeNav() {
     };
   }
 
+  const trigger = document.getElementById('sa-edge-nav-trigger');
+  if (trigger && drawer) {
+    trigger.onclick = () => {
+      drawer.classList.toggle('open');
+    };
+  }
+
   const btnCalcs = document.getElementById('sa-nav-calculatives-btn');
   if (btnCalcs) {
     btnCalcs.onclick = () => {
       if (drawer) drawer.classList.remove('open');
       if (window.gmArchToolsRouter) window.gmArchToolsRouter.showArchCalculatives();
+    };
+  }
+
+  const btnBasic = document.getElementById('sa-nav-basic-btn');
+  if (btnBasic) {
+    btnBasic.onclick = () => {
+      if (drawer) drawer.classList.remove('open');
+      if (window.gmArchToolsRouter) window.gmArchToolsRouter.showBasicTools();
     };
   }
 
@@ -137,11 +152,11 @@ function bindEdgeNav() {
   const modsGrid = document.getElementById('sa-drawer-modules-grid');
   if (modsGrid && PLATFORM_MODULES) {
     modsGrid.innerHTML = PLATFORM_MODULES.map(m => {
-      const isCurrent = m.id === '03';
+      const isCurrent = m.id === '02';
       return `
         <div class="sa-drawer-module-item ${isCurrent ? 'active' : ''}" data-mod-id="${m.id}">
           <span class="sa-drawer-mod-num">${m.num}</span>
-          <span>${m.title}</span>
+          <span>${m.name}</span>
         </div>
       `;
     }).join('');
@@ -150,10 +165,10 @@ function bindEdgeNav() {
       el.onclick = () => {
         const id = el.dataset.modId;
         if (drawer) drawer.classList.remove('open');
-        if (id === '01' && window.gmArchToolsRouter) {
-          window.gmArchToolsRouter.showArchCalculatives();
-        } else if (id === '03') {
-          // Already here
+        if (id === '02') {
+          // Already here in Site Analysis
+        } else if (id === '13' && window.gmArchToolsRouter) {
+          window.gmArchToolsRouter.showBasicTools();
         } else if (window.gmArchToolsRouter) {
           const modData = PLATFORM_MODULES.find(m => m.id === id);
           if (modData) window.gmArchToolsRouter.openRoadmapModal(modData);

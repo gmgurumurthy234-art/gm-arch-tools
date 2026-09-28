@@ -12,8 +12,9 @@ import { initModal, openToolModal } from './modal-controller.js';
 import { initAccountManager } from '../auth/account-manager.js';
 import { initWedgeCarousel, setActiveModule } from './wedge-carousel.js';
 import { initSiteAnalysisApp, selectAnalysisMode, pauseSiteAnalysis, resumeSiteAnalysis } from '../site-analysis/site-analysis-app.js';
+import { initBasicToolsApp } from '../basic-tools/basic-tools-app.js';
 
-let currentView = 'HUB'; // 'HUB' | 'CALCULATIVES' | 'SITE_ANALYSIS'
+let currentView = 'HUB'; // 'HUB' | 'CALCULATIVES' | 'SITE_ANALYSIS' | 'BASIC_TOOLS'
 let activeCategory = 'ALL';
 let searchResults = [];
 let selectedSearchIndex = -1;
@@ -36,6 +37,7 @@ export function initApp() {
     showPlatformHub: (updateHash, viewMode) => showPlatformHub(updateHash, viewMode),
     showArchCalculatives: (updateHash) => showArchCalculatives(updateHash),
     showSiteAnalysis: (updateHash) => showSiteAnalysis(updateHash),
+    showBasicTools: (updateHash) => showBasicTools(updateHash),
     openRoadmapModal: (mod) => openRoadmapModal(mod),
     openAboutModal: () => {
       const modal = document.getElementById('about-modal-backdrop');
@@ -47,6 +49,7 @@ export function initApp() {
   initWedgeCarousel({
     onOpenCalculatives: () => showArchCalculatives(),
     onOpenSiteAnalysis: () => showSiteAnalysis(),
+    onOpenBasicTools: () => showBasicTools(),
     onOpenRoadmap: (mod) => openRoadmapModal(mod)
   });
 
@@ -75,11 +78,13 @@ export function initApp() {
 export function showPlatformHub(updateHash = true, viewMode = 'wedges') {
   currentView = 'HUB';
   document.body.classList.remove('site-analysis-active');
+  document.body.classList.remove('basic-tools-active');
   pauseSiteAnalysis();
 
   const hubView = document.getElementById('platform-modules-view');
   const calcView = document.getElementById('arch-calculatives-view');
   const saView = document.getElementById('site-analysis-view');
+  const btView = document.getElementById('basic-tools-view');
   const wedgeContainer = document.getElementById('wedge-portal-container');
   const gridContainer = document.getElementById('modules-grid');
   const btnWedges = document.getElementById('toggle-view-wedges');
@@ -88,8 +93,10 @@ export function showPlatformHub(updateHash = true, viewMode = 'wedges') {
   if (hubView) hubView.classList.add('active-view');
   if (calcView) calcView.classList.remove('active-view');
   if (saView) saView.classList.remove('active-view');
+  if (btView) btView.classList.remove('active-view');
 
   if (viewMode === 'grid') {
+    document.body.classList.remove('home-portal-active');
     if (wedgeContainer) wedgeContainer.style.display = 'none';
     if (gridContainer) gridContainer.style.display = 'grid';
     if (btnWedges) btnWedges.classList.remove('active');
@@ -97,6 +104,7 @@ export function showPlatformHub(updateHash = true, viewMode = 'wedges') {
     setSidebarActive('all-modules');
     updateBreadcrumbs(['GM ARCH TOOLS', 'ALL MODULES']);
   } else {
+    document.body.classList.add('home-portal-active');
     if (wedgeContainer) wedgeContainer.style.display = 'flex';
     if (gridContainer) gridContainer.style.display = 'none';
     if (btnWedges) btnWedges.classList.add('active');
@@ -114,16 +122,20 @@ export function showPlatformHub(updateHash = true, viewMode = 'wedges') {
 
 export function showArchCalculatives(updateHash = true) {
   currentView = 'CALCULATIVES';
+  document.body.classList.remove('home-portal-active');
   document.body.classList.remove('site-analysis-active');
+  document.body.classList.remove('basic-tools-active');
   pauseSiteAnalysis();
 
   const hubView = document.getElementById('platform-modules-view');
   const calcView = document.getElementById('arch-calculatives-view');
   const saView = document.getElementById('site-analysis-view');
+  const btView = document.getElementById('basic-tools-view');
 
   if (hubView) hubView.classList.remove('active-view');
   if (calcView) calcView.classList.add('active-view');
   if (saView) saView.classList.remove('active-view');
+  if (btView) btView.classList.remove('active-view');
 
   setSidebarActive('all-modules');
   updateBreadcrumbs(['GM ARCH TOOLS', 'ARCH CALCULATIVES']);
@@ -137,15 +149,19 @@ export function showArchCalculatives(updateHash = true) {
 
 export function showSiteAnalysis(updateHash = true) {
   currentView = 'SITE_ANALYSIS';
+  document.body.classList.remove('home-portal-active');
+  document.body.classList.remove('basic-tools-active');
   document.body.classList.add('site-analysis-active');
 
   const hubView = document.getElementById('platform-modules-view');
   const calcView = document.getElementById('arch-calculatives-view');
   const saView = document.getElementById('site-analysis-view');
+  const btView = document.getElementById('basic-tools-view');
 
   if (hubView) hubView.classList.remove('active-view');
   if (calcView) calcView.classList.remove('active-view');
   if (saView) saView.classList.add('active-view');
+  if (btView) btView.classList.remove('active-view');
 
   setSidebarActive('all-modules');
   updateBreadcrumbs(['GM ARCH TOOLS', 'SITE ANALYSIS']);
@@ -158,6 +174,37 @@ export function showSiteAnalysis(updateHash = true) {
     initSiteAnalysisApp();
     resumeSiteAnalysis();
   }, 40);
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+export function showBasicTools(updateHash = true) {
+  currentView = 'BASIC_TOOLS';
+  document.body.classList.remove('home-portal-active');
+  document.body.classList.remove('site-analysis-active');
+  pauseSiteAnalysis();
+  document.body.classList.add('basic-tools-active');
+
+  const hubView = document.getElementById('platform-modules-view');
+  const calcView = document.getElementById('arch-calculatives-view');
+  const saView = document.getElementById('site-analysis-view');
+  const btView = document.getElementById('basic-tools-view');
+
+  if (hubView) hubView.classList.remove('active-view');
+  if (calcView) calcView.classList.remove('active-view');
+  if (saView) saView.classList.remove('active-view');
+  if (btView) btView.classList.add('active-view');
+
+  setSidebarActive('all-modules');
+  updateBreadcrumbs(['GM ARCH TOOLS', 'BASIC TOOLS']);
+
+  if (updateHash && window.location.hash !== '#basic-tools') {
+    history.pushState(null, '', '#basic-tools');
+  }
+
+  setTimeout(() => {
+    initBasicToolsApp();
+  }, 20);
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -184,6 +231,8 @@ function updateBreadcrumbs(pathArray) {
       clickAttr = 'data-nav="calculatives"';
     } else if (idx === 1 && crumb === 'SITE ANALYSIS') {
       clickAttr = 'data-nav="site-analysis"';
+    } else if (idx === 1 && crumb === 'BASIC TOOLS') {
+      clickAttr = 'data-nav="basic-tools"';
     } else if (idx === 1 && crumb === 'ALL MODULES') {
       clickAttr = 'data-nav="grid"';
     }
@@ -218,6 +267,14 @@ function updateBreadcrumbs(pathArray) {
     saLink.addEventListener('click', (e) => {
       e.preventDefault();
       showSiteAnalysis();
+    });
+  }
+
+  const btLink = container.querySelector('[data-nav="basic-tools"]');
+  if (btLink) {
+    btLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      showBasicTools();
     });
   }
 
@@ -261,6 +318,14 @@ function bindNavigationEvents() {
   const saBackBtn = document.getElementById('sa-back-btn');
   if (saBackBtn) {
     saBackBtn.addEventListener('click', () => {
+      showPlatformHub(true, 'wedges');
+    });
+  }
+
+  // Back to Modules button inside Basic Tools view
+  const btBackBtn = document.getElementById('bt-back-btn');
+  if (btBackBtn) {
+    btBackBtn.addEventListener('click', () => {
       showPlatformHub(true, 'wedges');
     });
   }
@@ -322,10 +387,12 @@ function checkUrlHash() {
     if (tool) {
       updateBreadcrumbs(['GM ARCH TOOLS', 'ARCH CALCULATIVES', `${tool.id} — ${tool.name.toUpperCase()}`]);
     }
-  } else if (hash === '#arch-calculatives' || hash === '#module-01') {
-    showArchCalculatives(false);
-  } else if (hash === '#site-analysis' || hash === '#module-03') {
+  } else if (hash === '#site-analysis' || hash === '#module-02') {
     showSiteAnalysis(false);
+  } else if (hash === '#basic-tools' || hash === '#module-13') {
+    showBasicTools(false);
+  } else if (hash === '#arch-calculatives') {
+    showArchCalculatives(false);
   } else {
     // Default to Platform Hub
     showPlatformHub(false);
@@ -379,10 +446,10 @@ function renderModulesGrid() {
       const modId = card.getAttribute('data-module-id');
       const mod = PLATFORM_MODULES.find(m => m.id === modId);
 
-      if (modId === '01') {
-        showArchCalculatives();
-      } else if (modId === '03') {
+      if (modId === '02') {
         showSiteAnalysis();
+      } else if (modId === '13') {
+        showBasicTools();
       } else if (mod) {
         openRoadmapModal(mod);
       }

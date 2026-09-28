@@ -328,6 +328,50 @@
   padding: 32px 36px 60px 36px;
 }
 
+/* ==============================================================
+   HOME PORTAL STRICT VIEWPORT HEIGHT CONTROL
+   Ensures that on the Home Screen (13 Modules wedge view),
+   the viewport is strictly 100vh with overflow: hidden.
+   Scrolling downward reveals NOTHING underneath.
+   ============================================================== */
+body.home-portal-active {
+  overflow: hidden !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+}
+
+body.home-portal-active .site-footer {
+  display: none !important;
+}
+
+body.home-portal-active .portal-layout-wrapper {
+  height: calc(100vh - 65px) !important;
+  max-height: calc(100vh - 65px) !important;
+  overflow: hidden !important;
+}
+
+body.home-portal-active .portal-main-area {
+  height: 100% !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
+  padding: 16px 36px 20px 36px !important;
+  justify-content: center;
+}
+
+body.home-portal-active #platform-modules-view {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+body.home-portal-active .wedge-portal-section {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
 /* Wedge Portal Section */
 .wedge-portal-section {
   width: 100%;

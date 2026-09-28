@@ -225,19 +225,19 @@ console.log('\n--- 5. Testing 13 Major Platform Modules Hierarchy ---');
 assert(PLATFORM_MODULES.length === 13, `Platform contains exactly 13 modules (found ${PLATFORM_MODULES.length})`);
 
 const expectedModules = [
-  { id: '01', name: 'ARCH CALCULATIVES', status: MODULE_STATUS.ACTIVE, toolsCount: 35 },
-  { id: '02', name: 'THE DESIGNER', status: MODULE_STATUS.COMING_SOON },
-  { id: '03', name: 'SITE ANALYSIS', status: MODULE_STATUS.ACTIVE, toolsCount: 10 },
-  { id: '04', name: 'SPACE & PROGRAM', status: MODULE_STATUS.COMING_SOON },
-  { id: '05', name: 'STRUCTURE', status: MODULE_STATUS.COMING_SOON },
-  { id: '06', name: 'BUILDING SERVICES', status: MODULE_STATUS.COMING_SOON },
-  { id: '07', name: 'BUILDING CODE & REGULATIONS', status: MODULE_STATUS.COMING_SOON },
-  { id: '08', name: 'ESTIMATION & COST', status: MODULE_STATUS.COMING_SOON },
-  { id: '09', name: 'SUSTAINABILITY', status: MODULE_STATUS.COMING_SOON },
-  { id: '10', name: 'DOCUMENTATION', status: MODULE_STATUS.COMING_SOON },
-  { id: '11', name: 'PRESENTATION STUDIO', status: MODULE_STATUS.COMING_SOON },
-  { id: '12', name: 'AI ARCHITECT', status: MODULE_STATUS.COMING_SOON },
-  { id: '13', name: 'PROJECT WORKSPACE', status: MODULE_STATUS.COMING_SOON }
+  { id: '01', name: 'THE DESIGNER', status: MODULE_STATUS.COMING_SOON, toolsCount: 0 },
+  { id: '02', name: 'SITE ANALYSIS', status: MODULE_STATUS.ACTIVE, toolsCount: 10 },
+  { id: '03', name: 'SPACE & PROGRAM', status: MODULE_STATUS.COMING_SOON, toolsCount: 0 },
+  { id: '04', name: 'STRUCTURE', status: MODULE_STATUS.COMING_SOON, toolsCount: 0 },
+  { id: '05', name: 'BUILDING SERVICES', status: MODULE_STATUS.COMING_SOON, toolsCount: 0 },
+  { id: '06', name: 'BUILDING CODE & REGULATIONS', status: MODULE_STATUS.COMING_SOON, toolsCount: 0 },
+  { id: '07', name: 'ESTIMATION & COST', status: MODULE_STATUS.COMING_SOON, toolsCount: 0 },
+  { id: '08', name: 'SUSTAINABILITY', status: MODULE_STATUS.COMING_SOON, toolsCount: 0 },
+  { id: '09', name: 'DOCUMENTATION', status: MODULE_STATUS.COMING_SOON, toolsCount: 0 },
+  { id: '10', name: 'PRESENTATION STUDIO', status: MODULE_STATUS.COMING_SOON, toolsCount: 0 },
+  { id: '11', name: 'AI ARCHITECT', status: MODULE_STATUS.COMING_SOON, toolsCount: 0 },
+  { id: '12', name: 'PROJECT WORKSPACE', status: MODULE_STATUS.COMING_SOON, toolsCount: 0 },
+  { id: '13', name: 'BASIC TOOLS', status: MODULE_STATUS.ACTIVE, toolsCount: 7 }
 ];
 
 for (const exp of expectedModules) {
@@ -349,6 +349,101 @@ const testFootprint = 384;
 const expectedBuiltUp = testFootprint * testFloors;
 assert(Math.abs(expectedTotalH - 12.8) < 0.001, 'Floor height formula: 4 floors × 3.2m = 12.8m');
 assert(expectedBuiltUp === 1536, 'Built-up area formula: 384m² × 4 floors = 1536m²');
+
+// 8. ITERATION 03 — ARCHITECTURAL IMPORT/EXPORT & BASIC TOOLS WORKSPACE
+console.log('\n--- 8. Testing Architectural Import/Export & Basic Tools Workspace ---');
+import { importEngine } from '../basic-tools/import-engine.js';
+import { exportEngine } from '../basic-tools/export-engine.js';
+import { ProjectState } from '../state/project-state.js';
+
+// Import Engine File Type Validation
+const supportedExts = ['skp', '3dm', 'rvt', 'dwg', 'png', 'jpg', 'jpeg'];
+supportedExts.forEach(ext => {
+  const mockFile = { name: `test_model.${ext}`, size: 1024 * 1024 * 12 };
+  const val = importEngine.validateFile(mockFile);
+  assert(val.valid, `Import accepts .${ext} files`);
+});
+
+const invalidExts = ['pdf', 'exe', 'docx', 'zip'];
+invalidExts.forEach(ext => {
+  const mockFile = { name: `bad_file.${ext}`, size: 1024 };
+  const val = importEngine.validateFile(mockFile);
+  assert(!val.valid, `Import correctly rejects .${ext} files`);
+});
+
+// Import Engine Size Formatting
+assert(importEngine.formatFileSize(500) === '500 Bytes', 'Size formatting: 500 Bytes');
+assert(importEngine.formatFileSize(1024 * 50) === '50 KB', 'Size formatting: 50 KB');
+assert(importEngine.formatFileSize(1024 * 1024 * 15.5) === '15.5 MB', 'Size formatting: 15.5 MB');
+
+// Revit Non-Hallucinatory Diagnostic Reporting
+const rvtMock = { name: 'Hospital_Tower.rvt', size: 1024 * 1024 * 85 };
+const rvtDiag = importEngine.generateRevitDiagnostic(rvtMock);
+assert(rvtDiag.includes('Geometry: ✓ Imported'), 'Revit diagnostic confirms geometry import');
+assert(rvtDiag.includes('Categories: ✓ Partially imported'), 'Revit diagnostic confirms category status');
+assert(rvtDiag.includes('BIM Parameters: ⚠ Some proprietary Revit family parameters unavailable'), 'Revit diagnostic explicitly disclaims unparsed BIM parameters');
+assert(rvtDiag.includes('Materials: ✓ Preserved where supported'), 'Revit diagnostic reports material preservation');
+
+// Export Engine Validation
+const validExport = exportEngine.validateExportOptions({
+  format: 'png',
+  background: 'transparent',
+  resolution: '4k'
+});
+assert(validExport.valid, 'PNG + Transparent + 4K export options are valid');
+
+// JPG + Transparent Error / Warning enforcement
+const invalidJpgTransparent = exportEngine.validateExportOptions({
+  format: 'jpg',
+  background: 'transparent',
+  resolution: '2k'
+});
+assert(!invalidJpgTransparent.valid, 'JPG + Transparent is rejected / warned (JPG lacks alpha channel)');
+assert(invalidJpgTransparent.warning.includes('does not support transparent'), 'JPG transparency warning explains format limitation');
+
+// Export Resolution Presets
+const res1080 = exportEngine.getDimensionsForResolution('1080p', 1600, 900);
+assert(res1080.width === 1920 && res1080.height === 1080, 'Resolution preset 1080p produces 1920x1080');
+
+const res2k = exportEngine.getDimensionsForResolution('2k', 1600, 900);
+assert(res2k.width === 2560 && res2k.height === 1440, 'Resolution preset 2K produces 2560x1440');
+
+const res4k = exportEngine.getDimensionsForResolution('4k', 1600, 900);
+assert(res4k.width === 3840 && res4k.height === 2160, 'Resolution preset 4K produces 3840x2160');
+
+// ProjectState Asset Operations
+ProjectState.clearAllAssets();
+assert(ProjectState.getAssets().length === 0, 'ProjectState initially empty after clear');
+
+const asset1 = ProjectState.addAsset({
+  name: 'Floor_Plan_L01.dwg',
+  format: 'DWG',
+  size: 1024 * 500,
+  unit: 'm'
+});
+assert(ProjectState.getAssets().length === 1, 'Asset added to ProjectState');
+assert(asset1.visible === true, 'New asset is visible by default');
+assert(asset1.opacity === 1.0, 'New asset has opacity 1.0');
+
+ProjectState.toggleAssetVisibility(asset1.id);
+assert(ProjectState.getAsset(asset1.id).visible === false, 'Asset visibility toggled to false');
+
+ProjectState.setAssetOpacity(asset1.id, 0.45);
+assert(Math.abs(ProjectState.getAsset(asset1.id).opacity - 0.45) < 0.01, 'Asset opacity set to 0.45');
+
+ProjectState.removeAsset(asset1.id);
+assert(ProjectState.getAssets().length === 0, 'Asset successfully removed from ProjectState');
+
+// Basic Tools DOM Elements in index.html & styles
+const basicCssContent = fs.readFileSync('styles/basic-tools.css', 'utf-8');
+assert(indexHtmlContent.includes('id="basic-tools-view"'), 'index.html contains #basic-tools-view');
+assert(indexHtmlContent.includes('id="bt-edge-nav-trigger"'), 'index.html contains #bt-edge-nav-trigger');
+assert(indexHtmlContent.includes('id="bt-edge-nav-drawer"'), 'index.html contains #bt-edge-nav-drawer');
+assert(indexHtmlContent.includes('id="bt-tools-list"'), 'index.html contains #bt-tools-list');
+assert(indexHtmlContent.includes('id="bt-stage-container"'), 'index.html contains #bt-stage-container');
+assert(indexHtmlContent.includes('id="bt-assets-list"'), 'index.html contains #bt-assets-list');
+assert(basicCssContent.includes('body.basic-tools-active'), 'styles/basic-tools.css contains body.basic-tools-active');
+assert(basicCssContent.includes('.bt-workspace-body'), 'styles/basic-tools.css contains .bt-workspace-body');
 
 console.log(`\n========================================`);
 console.log(`TEST SUMMARY: ${passed} PASSED, ${failed} FAILED`);
