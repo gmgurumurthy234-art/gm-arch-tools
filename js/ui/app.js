@@ -11,8 +11,9 @@ import { initIntro } from '../intro.js';
 import { initModal, openToolModal } from './modal-controller.js';
 import { initAccountManager } from '../auth/account-manager.js';
 import { initWedgeCarousel, setActiveModule } from './wedge-carousel.js';
+import { initSiteAnalysisApp, selectAnalysisMode } from '../site-analysis/site-analysis-app.js';
 
-let currentView = 'HUB'; // 'HUB' | 'CALCULATIVES'
+let currentView = 'HUB'; // 'HUB' | 'CALCULATIVES' | 'SITE_ANALYSIS'
 let activeCategory = 'ALL';
 let searchResults = [];
 let selectedSearchIndex = -1;
@@ -33,6 +34,7 @@ export function initApp() {
   // 4. Initialize Horizontal Module Wedge Carousel
   initWedgeCarousel({
     onOpenCalculatives: () => showArchCalculatives(),
+    onOpenSiteAnalysis: () => showSiteAnalysis(),
     onOpenRoadmap: (mod) => openRoadmapModal(mod)
   });
 
@@ -62,6 +64,7 @@ export function showPlatformHub(updateHash = true, viewMode = 'wedges') {
   currentView = 'HUB';
   const hubView = document.getElementById('platform-modules-view');
   const calcView = document.getElementById('arch-calculatives-view');
+  const saView = document.getElementById('site-analysis-view');
   const wedgeContainer = document.getElementById('wedge-portal-container');
   const gridContainer = document.getElementById('modules-grid');
   const btnWedges = document.getElementById('toggle-view-wedges');
@@ -69,6 +72,7 @@ export function showPlatformHub(updateHash = true, viewMode = 'wedges') {
 
   if (hubView) hubView.classList.add('active-view');
   if (calcView) calcView.classList.remove('active-view');
+  if (saView) saView.classList.remove('active-view');
 
   if (viewMode === 'grid') {
     if (wedgeContainer) wedgeContainer.style.display = 'none';
@@ -97,9 +101,11 @@ export function showArchCalculatives(updateHash = true) {
   currentView = 'CALCULATIVES';
   const hubView = document.getElementById('platform-modules-view');
   const calcView = document.getElementById('arch-calculatives-view');
+  const saView = document.getElementById('site-analysis-view');
 
   if (hubView) hubView.classList.remove('active-view');
   if (calcView) calcView.classList.add('active-view');
+  if (saView) saView.classList.remove('active-view');
 
   setSidebarActive('all-modules');
   updateBreadcrumbs(['GM ARCH TOOLS', 'ARCH CALCULATIVES']);
@@ -107,6 +113,30 @@ export function showArchCalculatives(updateHash = true) {
   if (updateHash && !window.location.hash.startsWith('#tool-') && window.location.hash !== '#arch-calculatives') {
     history.pushState(null, '', '#arch-calculatives');
   }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+export function showSiteAnalysis(updateHash = true) {
+  currentView = 'SITE_ANALYSIS';
+  const hubView = document.getElementById('platform-modules-view');
+  const calcView = document.getElementById('arch-calculatives-view');
+  const saView = document.getElementById('site-analysis-view');
+
+  if (hubView) hubView.classList.remove('active-view');
+  if (calcView) calcView.classList.remove('active-view');
+  if (saView) saView.classList.add('active-view');
+
+  setSidebarActive('all-modules');
+  updateBreadcrumbs(['GM ARCH TOOLS', 'SITE ANALYSIS']);
+
+  if (updateHash && window.location.hash !== '#site-analysis') {
+    history.pushState(null, '', '#site-analysis');
+  }
+
+  setTimeout(() => {
+    initSiteAnalysisApp();
+  }, 40);
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -131,6 +161,8 @@ function updateBreadcrumbs(pathArray) {
       clickAttr = 'data-nav="hub"';
     } else if (idx === 1 && crumb === 'ARCH CALCULATIVES') {
       clickAttr = 'data-nav="calculatives"';
+    } else if (idx === 1 && crumb === 'SITE ANALYSIS') {
+      clickAttr = 'data-nav="site-analysis"';
     } else if (idx === 1 && crumb === 'ALL MODULES') {
       clickAttr = 'data-nav="grid"';
     }
@@ -157,6 +189,14 @@ function updateBreadcrumbs(pathArray) {
     calcLink.addEventListener('click', (e) => {
       e.preventDefault();
       showArchCalculatives();
+    });
+  }
+
+  const saLink = container.querySelector('[data-nav="site-analysis"]');
+  if (saLink) {
+    saLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      showSiteAnalysis();
     });
   }
 
@@ -192,6 +232,14 @@ function bindNavigationEvents() {
   const backToModulesBtn = document.getElementById('back-to-modules-btn');
   if (backToModulesBtn) {
     backToModulesBtn.addEventListener('click', () => {
+      showPlatformHub(true, 'wedges');
+    });
+  }
+
+  // Back to Modules button inside Site Analysis view
+  const saBackBtn = document.getElementById('sa-back-btn');
+  if (saBackBtn) {
+    saBackBtn.addEventListener('click', () => {
       showPlatformHub(true, 'wedges');
     });
   }
@@ -255,6 +303,8 @@ function checkUrlHash() {
     }
   } else if (hash === '#arch-calculatives' || hash === '#module-01') {
     showArchCalculatives(false);
+  } else if (hash === '#site-analysis' || hash === '#module-03') {
+    showSiteAnalysis(false);
   } else {
     // Default to Platform Hub
     showPlatformHub(false);
@@ -310,6 +360,8 @@ function renderModulesGrid() {
 
       if (modId === '01') {
         showArchCalculatives();
+      } else if (modId === '03') {
+        showSiteAnalysis();
       } else if (mod) {
         openRoadmapModal(mod);
       }

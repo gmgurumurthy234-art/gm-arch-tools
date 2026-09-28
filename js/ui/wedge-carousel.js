@@ -18,6 +18,7 @@ let dotsContainer = null;
 let counterElement = null;
 
 let onOpenCalculativesCb = null;
+let onOpenSiteAnalysisCb = null;
 let onOpenRoadmapCb = null;
 
 // Drag / Swipe State
@@ -29,8 +30,9 @@ let animationId = null;
 let hasDragged = false;
 let isWheelCooldown = false;
 
-export function initWedgeCarousel({ onOpenCalculatives, onOpenRoadmap } = {}) {
+export function initWedgeCarousel({ onOpenCalculatives, onOpenSiteAnalysis, onOpenRoadmap } = {}) {
   onOpenCalculativesCb = onOpenCalculatives;
+  onOpenSiteAnalysisCb = onOpenSiteAnalysis;
   onOpenRoadmapCb = onOpenRoadmap;
 
   trackElement = document.getElementById('wedge-track');
@@ -146,6 +148,14 @@ function getModuleSpecChips(mod) {
       <span class="wedge-spec-chip"><span class="chip-val">8</span> Category Filters</span>
       <span class="wedge-spec-chip">Dual Unit Converter</span>
       <span class="wedge-spec-chip">Zero AI Latency</span>
+    `;
+  }
+  if (mod.id === '03') {
+    return `
+      <span class="wedge-spec-chip"><span class="chip-val">10</span> Analysis Modes</span>
+      <span class="wedge-spec-chip">Interactive 3D Viewport</span>
+      <span class="wedge-spec-chip">Live Sun & Wind Flow</span>
+      <span class="wedge-spec-chip">Conceptual Massing</span>
     `;
   }
   const chipsByModule = {
@@ -326,6 +336,8 @@ function triggerOpenActive() {
   const mod = PLATFORM_MODULES[activeIndex];
   if (mod.id === '01') {
     if (onOpenCalculativesCb) onOpenCalculativesCb();
+  } else if (mod.id === '03') {
+    if (onOpenSiteAnalysisCb) onOpenSiteAnalysisCb();
   } else {
     if (onOpenRoadmapCb) onOpenRoadmapCb(mod);
   }

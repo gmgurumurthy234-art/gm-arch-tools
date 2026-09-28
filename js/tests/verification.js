@@ -218,6 +218,8 @@ assert(calcParking.primaryValue === '60 Bays', 'Parking 4500 / 75 = 60 Bays');
 const calcCarpet = calculateTool('32', { internalRoomArea: 80, internalWallArea: 5, toiletArea: 15 });
 assert(calcCarpet.primaryValue === '100 m²', 'RERA Carpet 80 + 5 + 15 = 100 m²');
 
+import { SITE_ANALYSIS_MODES } from '../site-analysis/analysis-modes-data.js';
+
 // 5. PLATFORM 13-MODULE HIERARCHY TESTS
 console.log('\n--- 5. Testing 13 Major Platform Modules Hierarchy ---');
 assert(PLATFORM_MODULES.length === 13, `Platform contains exactly 13 modules (found ${PLATFORM_MODULES.length})`);
@@ -225,7 +227,7 @@ assert(PLATFORM_MODULES.length === 13, `Platform contains exactly 13 modules (fo
 const expectedModules = [
   { id: '01', name: 'ARCH CALCULATIVES', status: MODULE_STATUS.ACTIVE, toolsCount: 35 },
   { id: '02', name: 'THE DESIGNER', status: MODULE_STATUS.COMING_SOON },
-  { id: '03', name: 'SITE ANALYSIS', status: MODULE_STATUS.COMING_SOON },
+  { id: '03', name: 'SITE ANALYSIS', status: MODULE_STATUS.ACTIVE, toolsCount: 10 },
   { id: '04', name: 'SPACE & PROGRAM', status: MODULE_STATUS.COMING_SOON },
   { id: '05', name: 'STRUCTURE', status: MODULE_STATUS.COMING_SOON },
   { id: '06', name: 'BUILDING SERVICES', status: MODULE_STATUS.COMING_SOON },
@@ -252,6 +254,50 @@ for (const exp of expectedModules) {
     }
   }
 }
+
+// 6. SITE ANALYSIS MODULE 10-TOPICS VERIFICATION
+console.log('\n--- 6. Testing Site Analysis Module (10 Environmental Modes) ---');
+assert(SITE_ANALYSIS_MODES.length === 10, `Site Analysis has exactly 10 modes (found ${SITE_ANALYSIS_MODES.length})`);
+
+const expectedTopics = [
+  'CLIMATE ANALYSIS',
+  'SUN PATH & SOLAR ANALYSIS',
+  'WIND & AIRFLOW ANALYSIS',
+  'SITE ORIENTATION & CONTEXT',
+  'TOPOGRAPHY & CONTOUR ANALYSIS',
+  'ACCESS & CIRCULATION',
+  'VEGETATION & LANDSCAPE',
+  'VIEWS & VISUAL ANALYSIS',
+  'NOISE & ENVIRONMENTAL',
+  'UTILITIES & INFRASTRUCTURE'
+];
+
+SITE_ANALYSIS_MODES.forEach((mode, idx) => {
+  const expectedName = expectedTopics[idx];
+  assert(mode.name === expectedName, `Mode ${mode.num} name is "${expectedName}"`);
+  assert(mode.num === String(idx + 1).padStart(2, '0'), `Mode ${mode.num} has correct sequential index`);
+  assert(mode.whatIsIt && mode.whatIsIt.length > 20, `Mode ${mode.num} has detailed "whatIsIt"`);
+  assert(mode.whyImportant && mode.whyImportant.length > 20, `Mode ${mode.num} has detailed "whyImportant"`);
+  assert(Array.isArray(mode.architectsStudy) && mode.architectsStudy.length >= 3, `Mode ${mode.num} has at least 3 architectural study items`);
+  assert(Array.isArray(mode.parameters) && mode.parameters.length >= 3, `Mode ${mode.num} has at least 3 key parameters`);
+  assert(mode.calculationStatus.includes('COMING SOON'), `Mode ${mode.num} calculationStatus is marked COMING SOON`);
+  assert(Array.isArray(mode.sources) && mode.sources.length >= 2, `Mode ${mode.num} has at least 2 official recognized sources`);
+  assert(Array.isArray(mode.legend) && mode.legend.length >= 2, `Mode ${mode.num} has visual legend swatches`);
+
+  // Verify non-hallucination / disclaimer requirements
+  if (mode.id === '03') {
+    assert(!!mode.disclaimer && mode.disclaimer.includes('CONCEPTUAL AIRFLOW VISUALIZATION'), 'Mode 03 has required Wind CFD disclaimer');
+  }
+  if (mode.id === '09') {
+    assert(!!mode.disclaimer && mode.disclaimer.includes('CONCEPTUAL NOISE MODEL'), 'Mode 09 has required Noise measurement disclaimer');
+  }
+});
+
+// Left vs Right Panel Distribution (5 Left, 5 Right)
+const leftCount = SITE_ANALYSIS_MODES.filter(m => m.panel === 'left').length;
+const rightCount = SITE_ANALYSIS_MODES.filter(m => m.panel === 'right').length;
+assert(leftCount === 5, `Left panel has exactly 5 topics (01-05), found ${leftCount}`);
+assert(rightCount === 5, `Right panel has exactly 5 topics (06-10), found ${rightCount}`);
 
 console.log(`\n========================================`);
 console.log(`TEST SUMMARY: ${passed} PASSED, ${failed} FAILED`);

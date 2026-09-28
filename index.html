@@ -27,6 +27,7 @@
   <link rel="stylesheet" href="styles/search.css">
   <link rel="stylesheet" href="styles/tools.css">
   <link rel="stylesheet" href="styles/unit-converter.css">
+  <link rel="stylesheet" href="styles/site-analysis.css">
 </head>
 <body>
 
@@ -279,6 +280,210 @@
 
         </section>
 
+        <!-- ============================================================
+             VIEW 3: MODULE 03 — SITE ANALYSIS (10 INTERACTIVE MODES + 3D VIEWPORT)
+             ============================================================ -->
+        <section id="site-analysis-view" class="portal-view site-analysis-view" aria-label="Site Analysis 3D Workspace">
+
+          <!-- Workspace Header Bar -->
+          <div class="sa-header-bar">
+            <div class="sa-header-left">
+              <button type="button" class="sa-back-btn" id="sa-back-btn" title="Return to Platform Hub">
+                <span>←</span>
+                <span>Platform Hub</span>
+              </button>
+              <div class="sa-title-block">
+                <span class="sa-title-tag">MODULE 03 / 13 · 3D ENVIRONMENTAL LABORATORY</span>
+                <h2 class="sa-title-main">SITE ANALYSIS WORKSPACE</h2>
+              </div>
+            </div>
+
+            <div class="sa-header-center">
+              <div class="sa-mode-indicator-pill" id="sa-mode-indicator">
+                <span class="sa-indicator-dot"></span>
+                <span id="sa-mode-indicator-text">MODE 02: SUN PATH &amp; SOLAR ANALYSIS</span>
+              </div>
+            </div>
+
+            <div class="sa-header-right">
+              <button type="button" class="sa-action-btn" id="sa-toggle-massing-btn" title="Toggle Conceptual 3D Massing Editor">
+                <span>📐</span>
+                <span>Massing Tools</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 3-Column Workspace Main Stage (Left: 5 Topics | Center: 3D Viewport | Right: 5 Topics) -->
+          <div class="sa-workspace-body">
+
+            <!-- LEFT PANEL: TOPICS 01 TO 05 -->
+            <aside class="sa-side-panel left-panel" id="sa-left-panel" aria-label="Environmental Site Topics 01 to 05">
+              <div class="sa-panel-header">
+                <h3 class="sa-panel-title">ENVIRONMENTAL</h3>
+                <span class="sa-panel-count">01 — 05</span>
+              </div>
+              <ul class="sa-topic-list" id="sa-left-topic-list">
+                <!-- Rendered dynamically -->
+              </ul>
+              <div id="sa-left-details-container">
+                <!-- Rendered dynamically when a left mode is active -->
+              </div>
+            </aside>
+
+            <!-- CENTRAL 3D VIEWPORT AREA -->
+            <main class="sa-viewport-area" id="sa-viewport-area" aria-label="Interactive 3D Site Viewport">
+              
+              <!-- Architectural Crosshairs -->
+              <div class="sa-crosshair top-left"></div>
+              <div class="sa-crosshair top-right"></div>
+              <div class="sa-crosshair bottom-left"></div>
+              <div class="sa-crosshair bottom-right"></div>
+
+              <!-- True North Compass Gizmo -->
+              <div class="sa-north-gizmo" id="sa-north-gizmo" title="True North Orientation">
+                <div class="sa-north-arrow" id="sa-north-arrow"></div>
+                <span>NORTH</span>
+              </div>
+
+              <!-- Floating Camera View Controls Toolbar -->
+              <div class="sa-camera-toolbar" id="sa-camera-toolbar" role="toolbar" aria-label="Camera Controls">
+                <button type="button" class="sa-cam-btn" data-cam="TOP" title="Top Plan View">TOP</button>
+                <button type="button" class="sa-cam-btn" data-cam="FRONT" title="Front Elevation">FRONT</button>
+                <button type="button" class="sa-cam-btn" data-cam="RIGHT" title="Right Elevation">RIGHT</button>
+                <button type="button" class="sa-cam-btn" data-cam="LEFT" title="Left Elevation">LEFT</button>
+                <button type="button" class="sa-cam-btn" data-cam="BACK" title="Back Elevation">BACK</button>
+                <button type="button" class="sa-cam-btn" data-cam="ISOMETRIC" title="Isometric Axonometric">ISO</button>
+                <button type="button" class="sa-cam-btn active" data-cam="PERSPECTIVE" title="Perspective View">PERSP</button>
+                <button type="button" class="sa-cam-btn" data-cam="FIT" title="Fit Model to Viewport">FIT</button>
+                <button type="button" class="sa-cam-btn" data-cam="RESET" title="Reset Camera Orbit">↺ RESET</button>
+              </div>
+
+              <!-- Central Three.js Canvas Container -->
+              <div id="sa-viewport-container" style="width: 100%; height: 100%; position: relative;"></div>
+
+              <!-- Active Mode 3D Legend Box -->
+              <div class="sa-mode-legend" id="sa-mode-legend">
+                <!-- Populated dynamically -->
+              </div>
+
+              <!-- Conceptual Massing Drawer -->
+              <div class="sa-massing-drawer collapsed" id="sa-massing-drawer">
+                <div class="sa-drawer-header">
+                  <h4 class="sa-drawer-title">3D CONCEPTUAL MASSING</h4>
+                  <button type="button" class="sa-drawer-close-btn" id="sa-drawer-close-btn" title="Close Massing Drawer">✕</button>
+                </div>
+                
+                <!-- Shape Selection -->
+                <div class="sa-shape-selector">
+                  <button type="button" class="sa-shape-btn active" data-shape="RECTANGLE">Rectangle</button>
+                  <button type="button" class="sa-shape-btn" data-shape="CIRCLE">Cylinder</button>
+                  <button type="button" class="sa-shape-btn" data-shape="TRIANGLE">Prism</button>
+                </div>
+
+                <!-- Dimension Sliders -->
+                <div class="sa-field-row">
+                  <span class="sa-field-label">Length / X</span>
+                  <div class="sa-field-inputs">
+                    <input type="range" class="sa-slider" id="sa-mass-length-slider" min="6" max="60" value="24">
+                    <input type="number" class="sa-num-input" id="sa-mass-length-num" min="6" max="60" value="24">
+                    <span class="sa-num-unit">m</span>
+                  </div>
+                </div>
+
+                <div class="sa-field-row">
+                  <span class="sa-field-label">Width / Z</span>
+                  <div class="sa-field-inputs">
+                    <input type="range" class="sa-slider" id="sa-mass-width-slider" min="6" max="60" value="16">
+                    <input type="number" class="sa-num-input" id="sa-mass-width-num" min="6" max="60" value="16">
+                    <span class="sa-num-unit">m</span>
+                  </div>
+                </div>
+
+                <div class="sa-field-row">
+                  <span class="sa-field-label">Height / Y</span>
+                  <div class="sa-field-inputs">
+                    <input type="range" class="sa-slider" id="sa-mass-height-slider" min="3" max="50" value="12">
+                    <input type="number" class="sa-num-input" id="sa-mass-height-num" min="3" max="50" value="12">
+                    <span class="sa-num-unit">m</span>
+                  </div>
+                </div>
+
+                <div class="sa-field-row">
+                  <span class="sa-field-label">Offset X</span>
+                  <div class="sa-field-inputs">
+                    <input type="range" class="sa-slider" id="sa-mass-posX-slider" min="-18" max="18" value="0">
+                    <input type="number" class="sa-num-input" id="sa-mass-posX-num" min="-18" max="18" value="0">
+                    <span class="sa-num-unit">m</span>
+                  </div>
+                </div>
+
+                <div class="sa-field-row">
+                  <span class="sa-field-label">Offset Z</span>
+                  <div class="sa-field-inputs">
+                    <input type="range" class="sa-slider" id="sa-mass-posZ-slider" min="-15" max="15" value="0">
+                    <input type="number" class="sa-num-input" id="sa-mass-posZ-num" min="-15" max="15" value="0">
+                    <span class="sa-num-unit">m</span>
+                  </div>
+                </div>
+
+                <div class="sa-field-row">
+                  <span class="sa-field-label">Rotation</span>
+                  <div class="sa-field-inputs">
+                    <input type="range" class="sa-slider" id="sa-mass-rotation-slider" min="0" max="360" step="5" value="0">
+                    <input type="number" class="sa-num-input" id="sa-mass-rotation-num" min="0" max="360" value="0">
+                    <span class="sa-num-unit">°</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Viewport Navigation Help Badge -->
+              <div class="sa-view-help-badge">
+                <span>🖱️ Left: Orbit · Right/Shift: Pan · Wheel: Zoom</span>
+              </div>
+
+              <!-- Floating Overlay Layer Toggles Toolbar -->
+              <div class="sa-layers-toolbar" id="sa-layers-toolbar" role="toolbar" aria-label="Layer Toggles">
+                <label class="sa-layer-toggle">
+                  <input type="checkbox" id="sa-layer-building" checked>
+                  <span>Building</span>
+                </label>
+                <label class="sa-layer-toggle">
+                  <input type="checkbox" id="sa-layer-grid" checked>
+                  <span>Grid</span>
+                </label>
+                <label class="sa-layer-toggle">
+                  <input type="checkbox" id="sa-layer-north" checked>
+                  <span>North</span>
+                </label>
+                <label class="sa-layer-toggle">
+                  <input type="checkbox" id="sa-layer-context" checked>
+                  <span>Context</span>
+                </label>
+                <label class="sa-layer-toggle">
+                  <input type="checkbox" id="sa-layer-overlay" checked>
+                  <span>Analysis Overlay</span>
+                </label>
+              </div>
+
+            </main>
+
+            <!-- RIGHT PANEL: TOPICS 06 TO 10 -->
+            <aside class="sa-side-panel right-panel" id="sa-right-panel" aria-label="Civil &amp; Planning Topics 06 to 10">
+              <div class="sa-panel-header">
+                <h3 class="sa-panel-title">PLANNING &amp; URBAN</h3>
+                <span class="sa-panel-count">06 — 10</span>
+              </div>
+              <ul class="sa-topic-list" id="sa-right-topic-list">
+                <!-- Rendered dynamically -->
+              </ul>
+              <div id="sa-right-details-container">
+                <!-- Rendered dynamically when a right mode is active -->
+              </div>
+            </aside>
+
+          </div>
+        </section>
+
       </div>
     </div>
 
@@ -472,6 +677,10 @@
       <!-- Populated dynamically by modal-controller.js -->
     </div>
   </div>
+
+  <!-- Three.js & OrbitControls 3D Viewport Engines -->
+  <script src="js/vendor/three.min.js"></script>
+  <script src="js/vendor/OrbitControls.js"></script>
 
   <!-- Application Bootstrap -->
   <script type="module">

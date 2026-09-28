@@ -42,13 +42,13 @@ export const PLATFORM_MODULES = [
     id: "03",
     name: "SITE ANALYSIS",
     shortName: "Site Analysis",
-    tagline: "Context, Solar & Topography",
+    tagline: "10 Interactive 3D Analytical Modes",
     category: "Site & Environmental Planning",
-    status: MODULE_STATUS.COMING_SOON,
-    description: "Future tools for sun path azimuth/altitude diagrams, wind rose generators, cut & fill slope estimators, contour grading, and macro context analysis.",
+    status: MODULE_STATUS.ACTIVE,
+    description: "Interactive 3D environmental site analysis workspace featuring 10 architectural study modes: Climate, Sun Path, Wind, Orientation, Topography, Access, Vegetation, Views, Noise, and Utilities.",
     icon: "🧭",
     route: "site-analysis",
-    toolsCount: 0,
+    toolsCount: 10,
     tools: []
   },
   {
