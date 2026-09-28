@@ -24,6 +24,7 @@ let userState = loadUserState();
 
 function loadUserState() {
   try {
+    if (typeof localStorage === 'undefined') return { ...DEFAULT_USER };
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       return { ...DEFAULT_USER, ...JSON.parse(saved) };
@@ -36,6 +37,7 @@ function loadUserState() {
 
 function saveUserState() {
   try {
+    if (typeof localStorage === 'undefined') return;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(userState));
   } catch (e) {
     console.warn('Could not save user state to localStorage:', e);

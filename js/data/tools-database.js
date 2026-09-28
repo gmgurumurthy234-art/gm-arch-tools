@@ -659,3 +659,15 @@ export const ARCH_CALCULATIVES = [
     ]
   }
 ];
+
+export const TOOL_CATEGORIES = [
+  { id: "Site & Plot Planning", name: "Site & Plot" },
+  { id: "Architectural Mathematics", name: "Math & Geometry" },
+  { id: "FSI & Density Regulations", name: "FSI & Density" },
+  { id: "Site & Footprint Analysis", name: "Footprint" },
+  { id: "Area & Space Accounting", name: "Area & Carpet" },
+  { id: "Height & Vertical Regulations", name: "Height & Envelopes" },
+  { id: "Setbacks & Open Spaces", name: "Setbacks" },
+  { id: "Parking & Circulation", name: "Parking & Access" },
+  { id: "Fire & Life Safety", name: "Fire & Life Safety" }
+];

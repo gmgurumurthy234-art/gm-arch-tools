@@ -117,7 +117,6 @@ function bindEdgeNav() {
     };
   }
 
-  const trigger = document.getElementById('sa-edge-nav-trigger');
   if (trigger && drawer) {
     trigger.onclick = () => {
       drawer.classList.toggle('open');

@@ -987,9 +987,13 @@
   <!-- Application Bootstrap -->
   <script type="module">
     import { initApp } from './js/ui/app.js';
-    document.addEventListener('DOMContentLoaded', () => {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        initApp();
+      });
+    } else {
       initApp();
-    });
+    }
   </script>
 </body>
 </html>
