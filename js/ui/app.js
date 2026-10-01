@@ -387,12 +387,12 @@ function checkUrlHash() {
     if (tool) {
       updateBreadcrumbs(['GM ARCH TOOLS', 'ARCH CALCULATIVES', `${tool.id} — ${tool.name.toUpperCase()}`]);
     }
-  } else if (hash === '#site-analysis' || hash === '#module-02') {
+  } else if (hash === '#site-analysis' || hash === '#module-03') {
     showSiteAnalysis(false);
+  } else if (hash === '#arch-calculatives' || hash === '#module-01') {
+    showArchCalculatives(false);
   } else if (hash === '#basic-tools' || hash === '#module-13') {
     showBasicTools(false);
-  } else if (hash === '#arch-calculatives') {
-    showArchCalculatives(false);
   } else {
     // Default to Platform Hub
     showPlatformHub(false);
@@ -446,10 +446,10 @@ function renderModulesGrid() {
       const modId = card.getAttribute('data-module-id');
       const mod = PLATFORM_MODULES.find(m => m.id === modId);
 
-      if (modId === '02') {
+      if (modId === '01') {
+        showArchCalculatives();
+      } else if (modId === '03') {
         showSiteAnalysis();
-      } else if (modId === '13') {
-        showBasicTools();
       } else if (mod) {
         openRoadmapModal(mod);
       }

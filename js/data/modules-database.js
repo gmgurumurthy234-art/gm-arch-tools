@@ -1,20 +1,20 @@
 /**
- * GM ARCH TOOLS — 13 Major Platform Modules Database (Iteration 03)
+ * GM ARCH TOOLS — 13 Major Platform Modules Database
  * Creator: Guru Murthy (GM)
  * Defines the top-level architecture workflow hierarchy:
- *   01 THE DESIGNER
- *   02 SITE ANALYSIS (Active)
- *   03 SPACE & PROGRAM
- *   04 STRUCTURE
- *   05 BUILDING SERVICES
- *   06 BUILDING CODE & REGULATIONS
- *   07 ESTIMATION & COST
- *   08 SUSTAINABILITY
- *   09 DOCUMENTATION
- *   10 PRESENTATION STUDIO
- *   11 AI ARCHITECT
- *   12 PROJECT WORKSPACE
- *   13 BASIC TOOLS (Active)
+ *   01 ARCH CALCULATIVES (Active, 35 Architecture Tools)
+ *   02 THE DESIGNER (Coming Soon)
+ *   03 SITE ANALYSIS (Active, 10 Analytical Modes)
+ *   04 SPACE & PROGRAM (Coming Soon)
+ *   05 STRUCTURE (Coming Soon)
+ *   06 BUILDING SERVICES (Coming Soon)
+ *   07 BUILDING CODE & REGULATIONS (Coming Soon)
+ *   08 ESTIMATION & COST (Coming Soon)
+ *   09 SUSTAINABILITY (Coming Soon)
+ *   10 DOCUMENTATION (Coming Soon)
+ *   11 PRESENTATION STUDIO (Coming Soon)
+ *   12 AI ARCHITECT (Coming Soon)
+ *   13 PROJECT WORKSPACE (Coming Soon)
  */
 
 import { ARCH_CALCULATIVES } from './tools-database.js';
@@ -28,6 +28,20 @@ export const PLATFORM_MODULES = [
   {
     id: "01",
     num: "01",
+    name: "ARCH CALCULATIVES",
+    shortName: "Calculatives",
+    tagline: "35 Statutory Architecture Calculators",
+    category: "Statutory & Dimensional Compliance",
+    status: MODULE_STATUS.ACTIVE,
+    description: "Complete architectural computation suite for statutory planning: FSI/FAR limits, ground coverage, setbacks, parking requirements, building height caps, and RERA carpet standards.",
+    icon: "📐",
+    route: "arch-calculatives",
+    toolsCount: 35,
+    tools: ARCH_CALCULATIVES
+  },
+  {
+    id: "02",
+    num: "02",
     name: "THE DESIGNER",
     shortName: "Designer",
     tagline: "Form, Geometry & Synthesis",
@@ -40,8 +54,8 @@ export const PLATFORM_MODULES = [
     tools: []
   },
   {
-    id: "02",
-    num: "02",
+    id: "03",
+    num: "03",
     name: "SITE ANALYSIS",
     shortName: "Site Analysis",
     tagline: "10 Interactive 3D Analytical Modes",
@@ -54,8 +68,8 @@ export const PLATFORM_MODULES = [
     tools: []
   },
   {
-    id: "03",
-    num: "03",
+    id: "04",
+    num: "04",
     name: "SPACE & PROGRAM",
     shortName: "Space & Program",
     tagline: "Area Schedules & Adjacencies",
@@ -68,8 +82,8 @@ export const PLATFORM_MODULES = [
     tools: []
   },
   {
-    id: "04",
-    num: "04",
+    id: "05",
+    num: "05",
     name: "STRUCTURE",
     shortName: "Structure",
     tagline: "Preliminary Sizing & Grids",
@@ -82,8 +96,8 @@ export const PLATFORM_MODULES = [
     tools: []
   },
   {
-    id: "05",
-    num: "05",
+    id: "06",
+    num: "06",
     name: "BUILDING SERVICES",
     shortName: "Services",
     tagline: "MEP, Drainage & HVAC",
@@ -96,8 +110,8 @@ export const PLATFORM_MODULES = [
     tools: []
   },
   {
-    id: "06",
-    num: "06",
+    id: "07",
+    num: "07",
     name: "BUILDING CODE & REGULATIONS",
     shortName: "Codes & Regulations",
     tagline: "NBC, URDPFI & Local DCRs",
@@ -110,8 +124,8 @@ export const PLATFORM_MODULES = [
     tools: []
   },
   {
-    id: "07",
-    num: "07",
+    id: "08",
+    num: "08",
     name: "ESTIMATION & COST",
     shortName: "Estimation & Cost",
     tagline: "BOQ, Plinth Cost & Material Yield",
@@ -124,8 +138,8 @@ export const PLATFORM_MODULES = [
     tools: []
   },
   {
-    id: "08",
-    num: "08",
+    id: "09",
+    num: "09",
     name: "SUSTAINABILITY",
     shortName: "Sustainability",
     tagline: "Green Building, Solar & Rainwater",
@@ -138,8 +152,8 @@ export const PLATFORM_MODULES = [
     tools: []
   },
   {
-    id: "09",
-    num: "09",
+    id: "10",
+    num: "10",
     name: "DOCUMENTATION",
     shortName: "Documentation",
     tagline: "Schedules, Reports & Submissions",
@@ -152,8 +166,8 @@ export const PLATFORM_MODULES = [
     tools: []
   },
   {
-    id: "10",
-    num: "10",
+    id: "11",
+    num: "11",
     name: "PRESENTATION STUDIO",
     shortName: "Presentation Studio",
     tagline: "Sheets, Layouts & Portfolios",
@@ -166,8 +180,8 @@ export const PLATFORM_MODULES = [
     tools: []
   },
   {
-    id: "11",
-    num: "11",
+    id: "12",
+    num: "12",
     name: "AI ARCHITECT",
     shortName: "AI Architect",
     tagline: "Generative & Intelligent Assistants",
@@ -180,8 +194,8 @@ export const PLATFORM_MODULES = [
     tools: []
   },
   {
-    id: "12",
-    num: "12",
+    id: "13",
+    num: "13",
     name: "PROJECT WORKSPACE",
     shortName: "Project Workspace",
     tagline: "Unified Multi-Module Projects",
@@ -192,27 +206,5 @@ export const PLATFORM_MODULES = [
     route: "project-workspace",
     toolsCount: 0,
     tools: []
-  },
-  {
-    id: "13",
-    num: "13",
-    name: "BASIC TOOLS",
-    shortName: "Basic Tools",
-    tagline: "Import, Export, Measurements & Utilities",
-    category: "File I/O & Core Architectural Utilities",
-    status: MODULE_STATUS.ACTIVE,
-    description: "Practical architectural utility workspace containing Import (SKP, 3DM, RVT, DWG, PNG, JPG), Export (Transparent PNG, High-Res JPG), Unit Conversion, Measurement, Image Reference, Project Settings, and the 35 Arch Calculatives.",
-    icon: "🛠️",
-    route: "basic-tools",
-    toolsCount: 7,
-    tools: [
-      { id: "01", name: "IMPORT", desc: "Import 3D models (SKP, 3DM, RVT, DWG) and reference images" },
-      { id: "02", name: "EXPORT", desc: "Export transparent PNGs, high-res presentation graphics (1080p, 2K, 4K)" },
-      { id: "03", name: "UNIT CONVERSION", desc: "Architectural dual-system conversion (metric/imperial, linear, area, volume)" },
-      { id: "04", name: "MEASUREMENT", desc: "Architectural scale ruler and dimensional verification" },
-      { id: "05", name: "IMAGE / REFERENCE", desc: "Manage reference plans, aerials, sketches with opacity & positioning" },
-      { id: "06", name: "PROJECT SETTINGS", desc: "Project metadata, coordinate systems, default units & bye-laws" },
-      { id: "07", name: "ARCH CALCULATIVES (35)", desc: "Full statutory calculation suite (FSI, setbacks, parking, height, coverage)" }
-    ]
   }
 ];

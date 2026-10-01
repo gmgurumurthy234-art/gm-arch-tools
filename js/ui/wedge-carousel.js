@@ -144,7 +144,15 @@ function renderWedgeTrack() {
 }
 
 function getModuleSpecChips(mod) {
-  if (mod.id === '02') {
+  if (mod.id === '01') {
+    return `
+      <span class="wedge-spec-chip"><span class="chip-val">35</span> Architecture Calculators</span>
+      <span class="wedge-spec-chip">FSI & Coverage</span>
+      <span class="wedge-spec-chip">Parking & Setbacks</span>
+      <span class="wedge-spec-chip">RERA Carpet Area</span>
+    `;
+  }
+  if (mod.id === '03') {
     return `
       <span class="wedge-spec-chip"><span class="chip-val">10</span> Analysis Modes</span>
       <span class="wedge-spec-chip">Interactive 3D Viewport</span>
@@ -152,28 +160,20 @@ function getModuleSpecChips(mod) {
       <span class="wedge-spec-chip">Conceptual Massing</span>
     `;
   }
-  if (mod.id === '13') {
-    return `
-      <span class="wedge-spec-chip"><span class="chip-val">7</span> Core Tools</span>
-      <span class="wedge-spec-chip">Import (SKP/DWG/RVT)</span>
-      <span class="wedge-spec-chip">Export Transparent PNG</span>
-      <span class="wedge-spec-chip">35 Calculatives</span>
-    `;
-  }
   const chipsByModule = {
-    '01': ['Parametric Massing', 'Golden Ratio', 'Column Grids'],
-    '02': ['Sun Path Azimuth', 'Wind Rose', 'Topography & Contours'],
-    '03': ['Adjacency Matrix', 'Room Schedules', 'Occupant Capacity'],
-    '04': ['Beam Depth Sizing', 'Column Estimator', 'Cantilever Ratios'],
-    '05': ['Water Tanks UG/OH', 'HVAC Tonnage', 'Transformer Sizing'],
-    '06': ['NBC 2016 Clauses', 'URDPFI Guidelines', 'Model Bye-Laws'],
-    '07': ['BOQ Rates', 'Plinth Area Rates', 'Material Ratios'],
-    '08': ['Rainwater Catchment', 'Rooftop Solar PV', 'Daylight Factor'],
-    '09': ['Door-Window Schedule', 'Submission Checklist', 'Dossiers'],
-    '10': ['Drawing Scales', 'A0/A1 Margins', 'Palette Studio'],
-    '11': ['Generative Bye-Laws', 'Zoning Query', 'Design Optimization'],
-    '12': ['Project Dossier', 'Multi-Tool State', 'Client Export'],
-    '13': ['Import (SKP/3DM/RVT/DWG)', 'Export (Transparent PNG/JPG)', 'Unit Converter', '35 Calculatives']
+    '01': ['35 Core Calculators', 'FSI / FAR Analysis', 'Parking & Setbacks', 'Building Height Limits'],
+    '02': ['Parametric Massing', 'Golden Ratio', 'Column Grids', 'Proportion Systems'],
+    '03': ['Sun Path Azimuth', 'Wind Rose & Streamlines', 'Topography Contours', 'Interactive 3D'],
+    '04': ['Adjacency Matrix', 'Room Schedules', 'Occupant Capacity', 'Space Briefs'],
+    '05': ['Beam Depth Sizing', 'Column Sizing', 'Cantilever Ratios', 'Slab Thickness'],
+    '06': ['Water Tanks UG/OH', 'HVAC Tonnage', 'Electrical Transformers', 'Drainage Slopes'],
+    '07': ['NBC 2016 Clauses', 'URDPFI Guidelines', 'Model Bye-Laws', 'Municipal DCRs'],
+    '08': ['BOQ Rates', 'Plinth Area Rates', 'Material Yields', 'Cost Models'],
+    '09': ['Rainwater Catchment', 'Rooftop Solar PV', 'Daylight Factor', 'U-Values'],
+    '10': ['Door-Window Schedule', 'Submission Checklist', 'Finishes Matrix', 'Reports'],
+    '11': ['Drawing Scales', 'A0/A1 Margins', 'Palette Studio', 'Sheet Composition'],
+    '12': ['Generative Bye-Laws', 'Zoning Query', 'Design Optimization', 'Concept Assistant'],
+    '13': ['Project Dossier', 'Multi-Tool State', 'Client Export', 'Cross-Module Coordination']
   };
   const list = chipsByModule[mod.id] || ['Architectural Engine', 'System Workflow'];
   return list.map(c => `<span class="wedge-spec-chip">${escapeHtml(c)}</span>`).join('');
@@ -339,10 +339,10 @@ function triggerOpenActive() {
   const mod = PLATFORM_MODULES[activeIndex];
   if (!mod) return;
 
-  if (mod.id === '02') {
+  if (mod.id === '01') {
+    if (onOpenCalculativesCb) onOpenCalculativesCb();
+  } else if (mod.id === '03') {
     if (onOpenSiteAnalysisCb) onOpenSiteAnalysisCb();
-  } else if (mod.id === '13') {
-    if (onOpenBasicToolsCb) onOpenBasicToolsCb();
   } else {
     if (onOpenRoadmapCb) onOpenRoadmapCb(mod);
   }

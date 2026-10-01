@@ -151,7 +151,7 @@ function bindEdgeNav() {
   const modsGrid = document.getElementById('sa-drawer-modules-grid');
   if (modsGrid && PLATFORM_MODULES) {
     modsGrid.innerHTML = PLATFORM_MODULES.map(m => {
-      const isCurrent = m.id === '02';
+      const isCurrent = m.id === '03';
       return `
         <div class="sa-drawer-module-item ${isCurrent ? 'active' : ''}" data-mod-id="${m.id}">
           <span class="sa-drawer-mod-num">${m.num}</span>
@@ -164,10 +164,10 @@ function bindEdgeNav() {
       el.onclick = () => {
         const id = el.dataset.modId;
         if (drawer) drawer.classList.remove('open');
-        if (id === '02') {
+        if (id === '03') {
           // Already here in Site Analysis
-        } else if (id === '13' && window.gmArchToolsRouter) {
-          window.gmArchToolsRouter.showBasicTools();
+        } else if (id === '01' && window.gmArchToolsRouter) {
+          window.gmArchToolsRouter.showArchCalculatives();
         } else if (window.gmArchToolsRouter) {
           const modData = PLATFORM_MODULES.find(m => m.id === id);
           if (modData) window.gmArchToolsRouter.openRoadmapModal(modData);

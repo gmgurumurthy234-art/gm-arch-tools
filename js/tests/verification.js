@@ -225,19 +225,19 @@ console.log('\n--- 5. Testing 13 Major Platform Modules Hierarchy ---');
 assert(PLATFORM_MODULES.length === 13, `Platform contains exactly 13 modules (found ${PLATFORM_MODULES.length})`);
 
 const expectedModules = [
-  { id: '01', name: 'THE DESIGNER', status: MODULE_STATUS.COMING_SOON, toolsCount: 0 },
-  { id: '02', name: 'SITE ANALYSIS', status: MODULE_STATUS.ACTIVE, toolsCount: 10 },
-  { id: '03', name: 'SPACE & PROGRAM', status: MODULE_STATUS.COMING_SOON, toolsCount: 0 },
-  { id: '04', name: 'STRUCTURE', status: MODULE_STATUS.COMING_SOON, toolsCount: 0 },
-  { id: '05', name: 'BUILDING SERVICES', status: MODULE_STATUS.COMING_SOON, toolsCount: 0 },
-  { id: '06', name: 'BUILDING CODE & REGULATIONS', status: MODULE_STATUS.COMING_SOON, toolsCount: 0 },
-  { id: '07', name: 'ESTIMATION & COST', status: MODULE_STATUS.COMING_SOON, toolsCount: 0 },
-  { id: '08', name: 'SUSTAINABILITY', status: MODULE_STATUS.COMING_SOON, toolsCount: 0 },
-  { id: '09', name: 'DOCUMENTATION', status: MODULE_STATUS.COMING_SOON, toolsCount: 0 },
-  { id: '10', name: 'PRESENTATION STUDIO', status: MODULE_STATUS.COMING_SOON, toolsCount: 0 },
-  { id: '11', name: 'AI ARCHITECT', status: MODULE_STATUS.COMING_SOON, toolsCount: 0 },
-  { id: '12', name: 'PROJECT WORKSPACE', status: MODULE_STATUS.COMING_SOON, toolsCount: 0 },
-  { id: '13', name: 'BASIC TOOLS', status: MODULE_STATUS.ACTIVE, toolsCount: 7 }
+  { id: '01', name: 'ARCH CALCULATIVES', status: MODULE_STATUS.ACTIVE, toolsCount: 35 },
+  { id: '02', name: 'THE DESIGNER', status: MODULE_STATUS.COMING_SOON, toolsCount: 0 },
+  { id: '03', name: 'SITE ANALYSIS', status: MODULE_STATUS.ACTIVE, toolsCount: 10 },
+  { id: '04', name: 'SPACE & PROGRAM', status: MODULE_STATUS.COMING_SOON, toolsCount: 0 },
+  { id: '05', name: 'STRUCTURE', status: MODULE_STATUS.COMING_SOON, toolsCount: 0 },
+  { id: '06', name: 'BUILDING SERVICES', status: MODULE_STATUS.COMING_SOON, toolsCount: 0 },
+  { id: '07', name: 'BUILDING CODE & REGULATIONS', status: MODULE_STATUS.COMING_SOON, toolsCount: 0 },
+  { id: '08', name: 'ESTIMATION & COST', status: MODULE_STATUS.COMING_SOON, toolsCount: 0 },
+  { id: '09', name: 'SUSTAINABILITY', status: MODULE_STATUS.COMING_SOON, toolsCount: 0 },
+  { id: '10', name: 'DOCUMENTATION', status: MODULE_STATUS.COMING_SOON, toolsCount: 0 },
+  { id: '11', name: 'PRESENTATION STUDIO', status: MODULE_STATUS.COMING_SOON, toolsCount: 0 },
+  { id: '12', name: 'AI ARCHITECT', status: MODULE_STATUS.COMING_SOON, toolsCount: 0 },
+  { id: '13', name: 'PROJECT WORKSPACE', status: MODULE_STATUS.COMING_SOON, toolsCount: 0 }
 ];
 
 for (const exp of expectedModules) {

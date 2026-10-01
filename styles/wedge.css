@@ -324,20 +324,18 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  padding: 32px 36px 60px 36px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 24px 36px 48px 36px;
 }
 
 /* ==============================================================
-   HOME PORTAL STRICT VIEWPORT HEIGHT CONTROL
-   Ensures that on the Home Screen (13 Modules wedge view),
-   the viewport is strictly 100vh with overflow: hidden.
-   Scrolling downward reveals NOTHING underneath.
+   HOME PORTAL VIEWPORT LAYOUT & STABILITY
+   Spacious, comfortable framing that fits cleanly in the viewport
+   without squashing cards, and scrolls gracefully if viewport is compact.
    ============================================================== */
 body.home-portal-active {
-  overflow: hidden !important;
-  height: 100vh !important;
-  max-height: 100vh !important;
+  overflow-x: hidden;
 }
 
 body.home-portal-active .site-footer {
@@ -345,31 +343,28 @@ body.home-portal-active .site-footer {
 }
 
 body.home-portal-active .portal-layout-wrapper {
-  height: calc(100vh - 65px) !important;
-  max-height: calc(100vh - 65px) !important;
-  overflow: hidden !important;
+  min-height: calc(100vh - 65px);
 }
 
 body.home-portal-active .portal-main-area {
-  height: 100% !important;
-  max-height: 100% !important;
-  overflow: hidden !important;
-  padding: 16px 36px 20px 36px !important;
-  justify-content: center;
+  min-height: calc(100vh - 65px);
+  padding: 20px 36px 36px 36px;
+  justify-content: flex-start;
 }
 
 body.home-portal-active #platform-modules-view {
-  height: 100%;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 body.home-portal-active .wedge-portal-section {
-  height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
+  margin: auto 0;
+  width: 100%;
 }
 
 /* Wedge Portal Section */
@@ -498,7 +493,7 @@ body.home-portal-active .wedge-portal-section {
 .wedge-card {
   position: relative;
   flex-shrink: 0;
-  height: clamp(420px, 58vh, 500px);
+  height: clamp(380px, 50vh, 460px);
   border-radius: var(--radius-lg);
   overflow: hidden;
   background: #0d121a;
@@ -639,7 +634,7 @@ body.home-portal-active .wedge-portal-section {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 28px 28px 24px 28px;
+  padding: 22px 24px 20px 24px;
   animation: wedge-content-in 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -653,7 +648,7 @@ body.home-portal-active .wedge-portal-section {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 
 .wedge-active-index {
@@ -707,7 +702,7 @@ body.home-portal-active .wedge-portal-section {
 
 /* Active Wedge Titles */
 .wedge-active-title-block {
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .wedge-active-category {
@@ -716,11 +711,11 @@ body.home-portal-active .wedge-portal-section {
   letter-spacing: 1.5px;
   color: var(--text-faint);
   text-transform: uppercase;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .wedge-active-title {
-  font-size: clamp(22px, 3vw, 30px);
+  font-size: clamp(20px, 2.5vw, 28px);
   font-weight: 800;
   color: #ffffff;
   letter-spacing: 0.5px;
@@ -728,19 +723,23 @@ body.home-portal-active .wedge-portal-section {
 }
 
 .wedge-active-desc {
-  font-size: 13.5px;
+  font-size: 13px;
   color: var(--text-muted);
-  line-height: 1.55;
-  margin-bottom: 20px;
+  line-height: 1.5;
+  margin-bottom: 14px;
   flex: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 /* Architectural Specs Chips */
 .wedge-active-specs {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 24px;
+  gap: 6px;
+  margin-bottom: 16px;
 }
 
 .wedge-spec-chip {
