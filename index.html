@@ -29,6 +29,7 @@
   <link rel="stylesheet" href="styles/unit-converter.css">
   <link rel="stylesheet" href="styles/site-analysis.css">
   <link rel="stylesheet" href="styles/basic-tools.css">
+  <link rel="stylesheet" href="styles/leaflet.css">
 </head>
 <body>
 
@@ -416,6 +417,181 @@
 
               <!-- Central Three.js Canvas Container -->
               <div id="sa-viewport-container" style="width: 100%; height: 100%; position: relative;"></div>
+
+              <!-- 3D Viewport Active Site Specification HUD -->
+              <div class="sa-active-site-hud" id="sa-active-site-hud" aria-label="Active Site Information" style="display: none;">
+                <div class="sa-ash-header">
+                  <span class="sa-ash-badge">📍 ACTIVE SITE</span>
+                  <span class="sa-ash-coords" id="sa-ash-coords">13.0827° N, 80.2707° E</span>
+                </div>
+                <div class="sa-ash-name" id="sa-ash-location-name">Chennai, Tamil Nadu, India</div>
+                <div class="sa-ash-metrics">
+                  <span class="sa-ash-metric" id="sa-ash-area">Area: 2,000 m² (0.49 Acres)</span>
+                  <span class="sa-ash-metric" id="sa-ash-boundary">Boundary: 50m × 40m</span>
+                </div>
+                <div class="sa-ash-actions">
+                  <button type="button" class="sa-ash-btn" id="sa-btn-edit-site" title="Modify site boundary on map">✏️ EDIT SITE</button>
+                  <button type="button" class="sa-ash-btn" id="sa-btn-change-site" title="Search a new location on map">🔄 CHANGE SITE</button>
+                </div>
+              </div>
+
+              <!-- ==============================================================
+                   MAPS & SITE BOUNDARY IMPORT WORKSPACE (ITERATION 06)
+                   Integrated inside Site Analysis center workspace
+                   ============================================================== -->
+              <div id="sa-map-workspace" class="sa-map-workspace" style="display: none;" aria-label="Maps and Site Boundary Workspace">
+                
+                <!-- Map Top Bar: Search & View Switcher -->
+                <div class="sa-map-top-bar">
+                  <!-- Search Container -->
+                  <div class="sa-map-search-container">
+                    <form id="sa-map-search-form" class="sa-map-search-form" onsubmit="return false;">
+                      <span class="sa-map-search-icon">🔍</span>
+                      <input type="text" 
+                             id="sa-map-search-input" 
+                             class="sa-map-search-input" 
+                             placeholder="Search location or coordinates (e.g. Chennai, Marina Beach, or 13.0827, 80.2707)..." 
+                             autocomplete="off" 
+                             spellcheck="false">
+                      <button type="button" id="sa-map-search-clear" class="sa-map-search-clear-btn" title="Clear Search">✕</button>
+                      <button type="submit" class="sa-map-search-submit-btn" id="sa-map-search-btn">SEARCH</button>
+                    </form>
+
+                    <!-- Quick Location Chips -->
+                    <div class="sa-map-quick-chips">
+                      <span class="sa-map-chip-label">Quick:</span>
+                      <button type="button" class="sa-map-quick-chip" data-query="Chennai">Chennai</button>
+                      <button type="button" class="sa-map-quick-chip" data-query="Marina Beach, Chennai">Marina Beach</button>
+                      <button type="button" class="sa-map-quick-chip" data-query="Adhiyamaan College of Engineering, Hosur">Adhiyamaan College</button>
+                      <button type="button" class="sa-map-quick-chip" data-query="13.0827, 80.2707">13.0827, 80.2707</button>
+                      <button type="button" class="sa-map-quick-chip" data-query="Bengaluru">Bengaluru</button>
+                      <button type="button" class="sa-map-quick-chip" data-query="Hyderabad">Hyderabad</button>
+                    </div>
+
+                    <!-- Live Search Status & Disambiguation Dropdown -->
+                    <div id="sa-map-search-status" class="sa-map-search-status" style="display: none;"></div>
+                    <div id="sa-map-search-results" class="sa-map-search-results" style="display: none;"></div>
+                  </div>
+
+                  <!-- Map View Switcher (NORMAL, SATELLITE, TERRAIN, EARTH / 3D) -->
+                  <div class="sa-map-view-switcher" role="group" aria-label="Map Layer Selection">
+                    <button type="button" class="sa-map-view-btn active" data-layer="NORMAL" title="Standard Roadmap View">NORMAL</button>
+                    <button type="button" class="sa-map-view-btn" data-layer="SATELLITE" title="High-Resolution Satellite Imagery">SATELLITE</button>
+                    <button type="button" class="sa-map-view-btn" data-layer="TERRAIN" title="Topographic Elevation &amp; Contours">TERRAIN</button>
+                    <button type="button" class="sa-map-view-btn" data-layer="EARTH" title="Google Earth Photorealistic 3D Tiles Status">EARTH / 3D</button>
+                    <button type="button" class="sa-map-close-btn" id="sa-map-close-btn" title="Return to 3D Site Viewport">✕ 3D VIEWPORT</button>
+                  </div>
+                </div>
+
+                <!-- Floating Drawing & Boundary Drafting Toolbar -->
+                <div class="sa-map-tools-toolbar" role="toolbar" aria-label="Map Boundary Tools">
+                  <div class="sa-map-tools-title">SITE TOOLS</div>
+                  <button type="button" class="sa-map-tool-btn" data-tool="MEASURE" title="Measure geodesic distance on map (m, km, ft)">
+                    <span>📏</span>
+                    <span>MEASURE</span>
+                  </button>
+                  <button type="button" class="sa-map-tool-btn" data-tool="RECTANGLE" title="Draw 2-point rectangular site boundary">
+                    <span>▭</span>
+                    <span>RECTANGLE</span>
+                  </button>
+                  <button type="button" class="sa-map-tool-btn" data-tool="POLYLINE" title="Draw custom multi-point polyline / polygon site boundary">
+                    <span>⬡</span>
+                    <span>POLYLINE</span>
+                  </button>
+                  <button type="button" class="sa-map-tool-btn" data-tool="CLEAR" title="Clear current boundary drawing">
+                    <span>🗑️</span>
+                    <span>CLEAR</span>
+                  </button>
+                </div>
+
+                <!-- Live Tool Guidance Hint Bar -->
+                <div class="sa-map-tool-hint" id="sa-map-tool-hint" style="display: none;"></div>
+
+                <!-- Map Navigation Gizmos (+, -, Reset Camera) -->
+                <div class="sa-map-nav-controls">
+                  <button type="button" class="sa-map-nav-btn" id="sa-map-btn-zoomin" title="Zoom In">+</button>
+                  <button type="button" class="sa-map-nav-btn" id="sa-map-btn-zoomout" title="Zoom Out">−</button>
+                  <button type="button" class="sa-map-nav-btn" id="sa-map-btn-reset" title="Center on Site">🎯</button>
+                </div>
+
+                <!-- Central Map Canvas Container (Leaflet Engine) -->
+                <div id="sa-map-container" class="sa-map-container"></div>
+
+                <!-- Floating Active Site Information & Import Action Card -->
+                <div class="sa-map-info-card" id="sa-map-info-card" aria-label="Active Site Preview">
+                  <div class="sa-mic-header">
+                    <span class="sa-mic-badge">📍 ACTIVE SITE SPECIFICATION</span>
+                    <span class="sa-mic-crs">WGS 84</span>
+                  </div>
+
+                  <div class="sa-mic-location">
+                    <span class="sa-mic-label">Location:</span>
+                    <span class="sa-mic-value" id="sa-info-location-name">Chennai, Tamil Nadu, India</span>
+                  </div>
+
+                  <div class="sa-mic-grid">
+                    <div class="sa-mic-cell">
+                      <span class="sa-mic-label">Latitude:</span>
+                      <span class="sa-mic-value mono" id="sa-info-lat">13.0827° N</span>
+                    </div>
+                    <div class="sa-mic-cell">
+                      <span class="sa-mic-label">Longitude:</span>
+                      <span class="sa-mic-value mono" id="sa-info-lng">80.2707° E</span>
+                    </div>
+                  </div>
+
+                  <div class="sa-mic-grid">
+                    <div class="sa-mic-cell">
+                      <span class="sa-mic-label">Site Area:</span>
+                      <span class="sa-mic-value" id="sa-info-area">2,000 m² (0.49 Acres)</span>
+                    </div>
+                    <div class="sa-mic-cell">
+                      <span class="sa-mic-label">Boundary:</span>
+                      <span class="sa-mic-value" id="sa-info-boundary">Rectangle (50m × 40m)</span>
+                    </div>
+                  </div>
+
+                  <!-- External Data Attribution -->
+                  <div class="sa-mic-attribution">
+                    <span class="sa-mic-attr-label">DATA SOURCE:</span>
+                    <span class="sa-mic-attr-val" id="sa-map-data-source-text">CartoDB Voyager / OpenStreetMap (WGS 84)</span>
+                  </div>
+
+                  <!-- Import Action Button -->
+                  <button type="button" class="sa-mic-import-btn" id="sa-btn-import-site">
+                    <span>⚡</span>
+                    <span>IMPORT TO 3D VIEWPORT</span>
+                  </button>
+                </div>
+
+                <!-- Google Earth 3D Requirements Modal -->
+                <div class="sa-map-earth-modal" id="sa-map-earth-modal" style="display: none;" role="dialog" aria-modal="true">
+                  <div class="sa-mem-panel">
+                    <div class="sa-mem-header">
+                      <h4>🌍 GOOGLE EARTH / PHOTOREALISTIC 3D TILES</h4>
+                      <button type="button" class="sa-mem-close" id="sa-earth-modal-close">✕</button>
+                    </div>
+                    <div class="sa-mem-content">
+                      <p>Photorealistic 3D Tiles require Google Maps Platform Map Tiles API credentials. In accordance with strict architectural integrity, simulated meshes are not fabricated.</p>
+                      
+                      <div class="sa-mem-box">
+                        <div class="sa-mem-step"><b>1.</b> Obtain an official Google Maps Platform API key or Demo Key.</div>
+                        <div class="sa-mem-step"><b>2.</b> Enable <i>Map Tiles API</i> &amp; <i>Maps JavaScript API</i> in Google Cloud Console.</div>
+                        <div class="sa-mem-step"><b>3.</b> Enter key below to unlock 3D Google Earth rendering:</div>
+                        <div class="sa-mem-input-wrap">
+                          <input type="password" id="sa-gmp-key-input" class="sa-mem-input" placeholder="Enter GOOGLE_MAPS_API_KEY...">
+                          <button type="button" id="sa-save-gmp-key-btn" class="sa-mem-save-btn">SAVE KEY</button>
+                        </div>
+                      </div>
+                      
+                      <div class="sa-mem-footer">
+                        <span>Current Active Provider: Esri World Imagery &amp; CartoDB High-Res Vector</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
 
               <!-- Active Mode 3D Legend Box -->
               <div class="sa-mode-legend" id="sa-mode-legend">
@@ -983,6 +1159,8 @@
   <!-- Three.js & OrbitControls 3D Viewport Engines -->
   <script src="js/vendor/three.min.js"></script>
   <script src="js/vendor/OrbitControls.js"></script>
+  <!-- Leaflet Interactive Geographic Mapping Engine -->
+  <script src="js/vendor/leaflet.js"></script>
 
   <!-- Application Bootstrap -->
   <script type="module">

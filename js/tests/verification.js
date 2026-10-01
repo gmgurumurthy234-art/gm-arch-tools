@@ -460,6 +460,149 @@ assert(appJsContent.includes("saView.style.display = 'none';"), 'app.js explicit
 assert(appJsContent.includes("calcView.style.display = 'none';"), 'app.js explicitly hides calcView in portal hub state');
 assert(appJsContent.includes("btView.style.display = 'none';"), 'app.js explicitly hides btView in portal hub state');
 
+// 10. ITERATION 06 — SITE ANALYSIS MAPS + SITE IMPORT
+console.log('\n--- 10. Testing Iteration 06 Site Analysis Maps & Boundary Import Engine ---');
+import {
+  parseCoordinates,
+  haversineDistance,
+  calculateGeodesicPolygonArea,
+  convertGeoToLocal3D,
+  formatArea,
+  SiteState
+} from '../state/site-state.js';
+
+// Coordinate Parsing
+const coord1 = parseCoordinates('13.0827, 80.2707');
+assert(coord1.isValid === true, 'Parse standard coordinate: "13.0827, 80.2707" is valid');
+assertClose(coord1.lat, 13.0827, 1e-4, 'Parsed lat matches 13.0827');
+assertClose(coord1.lng, 80.2707, 1e-4, 'Parsed lng matches 80.2707');
+
+const coord2 = parseCoordinates('13.0827,80.2707');
+assert(coord2.isValid === true, 'Parse coordinate without space: "13.0827,80.2707" is valid');
+
+const coord3 = parseCoordinates('-33.8688, 151.2093');
+assert(coord3.isValid === true, 'Parse negative latitude: "-33.8688, 151.2093" is valid');
+assertClose(coord3.lat, -33.8688, 1e-4, 'Parsed lat matches -33.8688');
+
+const coord4 = parseCoordinates('13.0827 N, 80.2707 E');
+assert(coord4.isValid === true, 'Parse directional format: "13.0827 N, 80.2707 E" is valid');
+assertClose(coord4.lat, 13.0827, 1e-4, 'Directional lat matches 13.0827');
+assertClose(coord4.lng, 80.2707, 1e-4, 'Directional lng matches 80.2707');
+
+const coord5 = parseCoordinates('34.0522 S, 118.2437 W');
+assert(coord5.isValid === true, 'Parse directional S/W format: "34.0522 S, 118.2437 W" is valid');
+assertClose(coord5.lat, -34.0522, 1e-4, 'Directional S latitude converts to negative -34.0522');
+assertClose(coord5.lng, -118.2437, 1e-4, 'Directional W longitude converts to negative -118.2437');
+
+const coordInvalidLat = parseCoordinates('95.0, 50.0');
+assert(coordInvalidLat.isValid === false, 'Latitude > 90 rejected');
+
+const coordInvalidLng = parseCoordinates('10.0, 195.0');
+assert(coordInvalidLng.isValid === false, 'Longitude > 180 rejected');
+
+const nonCoord = parseCoordinates('Marina Beach, Chennai');
+assert(nonCoord.isValid === false, 'Named text string is properly rejected by coordinate parser (routes to geocoder)');
+
+// Geodesic Distance (Haversine)
+// Chennai (13.0827, 80.2707) to Bangalore (12.9716, 77.5946) is approx 290 km
+const dChennaiBangalore = haversineDistance(
+  { lat: 13.0827, lng: 80.2707 },
+  { lat: 12.9716, lng: 77.5946 }
+);
+assert(dChennaiBangalore > 280000 && dChennaiBangalore < 300000, `Haversine distance Chennai->Bangalore ~290km (got ${(dChennaiBangalore/1000).toFixed(1)} km)`);
+
+const dZero = haversineDistance({ lat: 13.0827, lng: 80.2707 }, { lat: 13.0827, lng: 80.2707 });
+assert(dZero === 0, 'Distance between identical points is exactly 0');
+
+// Geodesic Polygon Area
+// A ~100m x ~100m square near equator / Chennai
+// 100m lat delta approx: 100 / 111320 = 0.0008983 deg
+const lat0 = 13.0827;
+const lng0 = 80.2707;
+const dDeg = 0.0008983;
+const squareBox = [
+  { lat: lat0, lng: lng0 },
+  { lat: lat0, lng: lng0 + dDeg },
+  { lat: lat0 + dDeg, lng: lng0 + dDeg },
+  { lat: lat0 + dDeg, lng: lng0 }
+];
+const areaCalculated = calculateGeodesicPolygonArea(squareBox);
+assert(areaCalculated > 9000 && areaCalculated < 11000, `Geodesic polygon area for ~100x100m box is ~10,000 m² (got ${Math.round(areaCalculated)} m²)`);
+
+// 3D Metric Projection (Architectural: -Z = North, +X = East)
+const testGeoPoints = [
+  { lat: 13.0837, lng: 80.2707 }, // North of center
+  { lat: 13.0827, lng: 80.2717 }, // East of center
+  { lat: 13.0817, lng: 80.2707 }, // South of center
+  { lat: 13.0827, lng: 80.2697 }  // West of center
+];
+const local3D = convertGeoToLocal3D(testGeoPoints, 13.0827, 80.2707);
+assert(local3D.length === 4, 'convertGeoToLocal3D returns 4 points');
+assert(local3D[0].z < 0, 'Point North of center projects to negative Z (Three.js North = -Z)');
+assert(local3D[1].x > 0, 'Point East of center projects to positive X (Three.js East = +X)');
+assert(local3D[2].z > 0, 'Point South of center projects to positive Z');
+assert(local3D[3].x < 0, 'Point West of center projects to negative X');
+
+// Area Formatter
+const formatted = formatArea(2000);
+assert(formatted.sqMeters === '2,000 m²', 'formatArea formats sqMeters');
+assert(formatted.acres.includes('Acres'), 'formatArea formats acres');
+assert(formatted.sqFt.includes('sq ft'), 'formatArea formats sqFt');
+
+// SiteState Singleton & Reactivity
+const activeSite = SiteState.getActiveSite();
+assert(typeof activeSite.latitude === 'number', 'SiteState has valid active latitude');
+assert(typeof activeSite.longitude === 'number', 'SiteState has valid active longitude');
+assert(activeSite.locationName && activeSite.locationName.length > 0, 'SiteState has location name');
+assert(Array.isArray(activeSite.boundary3D), 'SiteState has boundary3D array');
+
+let subscriberNotified = false;
+const unsubscribe = SiteState.subscribe((site) => {
+  if (site.locationName === 'Test Verification Site') {
+    subscriberNotified = true;
+  }
+});
+SiteState.setActiveSite({ locationName: 'Test Verification Site' });
+assert(subscriberNotified === true, 'SiteState notify/subscribe reactivity triggers on update');
+unsubscribe();
+
+// Restore default location
+SiteState.setActiveSite({ locationName: 'Chennai, Tamil Nadu, India' });
+
+// DOM Structure for Maps and Active Site in index.html
+assert(indexHtmlContent.includes('styles/leaflet.css'), 'index.html links styles/leaflet.css');
+assert(indexHtmlContent.includes('js/vendor/leaflet.js'), 'index.html includes js/vendor/leaflet.js');
+assert(indexHtmlContent.includes('id="sa-active-site-hud"'), 'index.html contains #sa-active-site-hud');
+assert(indexHtmlContent.includes('id="sa-btn-edit-site"'), 'index.html contains #sa-btn-edit-site');
+assert(indexHtmlContent.includes('id="sa-btn-change-site"'), 'index.html contains #sa-btn-change-site');
+assert(indexHtmlContent.includes('id="sa-map-workspace"'), 'index.html contains #sa-map-workspace');
+assert(indexHtmlContent.includes('id="sa-map-search-input"'), 'index.html contains #sa-map-search-input');
+assert(indexHtmlContent.includes('id="sa-map-search-results"'), 'index.html contains #sa-map-search-results');
+assert(indexHtmlContent.includes('id="sa-map-container"'), 'index.html contains #sa-map-container');
+assert(indexHtmlContent.includes('id="sa-map-info-card"'), 'index.html contains #sa-map-info-card');
+assert(indexHtmlContent.includes('id="sa-btn-import-site"'), 'index.html contains #sa-btn-import-site');
+assert(indexHtmlContent.includes('id="sa-map-earth-modal"'), 'index.html contains #sa-map-earth-modal');
+
+// CSS Rules for Maps and Active Site HUD in styles/site-analysis.css
+assert(cssContent.includes('.sa-active-site-hud'), 'site-analysis.css contains .sa-active-site-hud');
+assert(cssContent.includes('.sa-map-workspace'), 'site-analysis.css contains .sa-map-workspace');
+assert(cssContent.includes('.sa-map-search-form'), 'site-analysis.css contains .sa-map-search-form');
+assert(cssContent.includes('.sa-map-view-switcher'), 'site-analysis.css contains .sa-map-view-switcher');
+assert(cssContent.includes('.sa-map-tools-toolbar'), 'site-analysis.css contains .sa-map-tools-toolbar');
+assert(cssContent.includes('.sa-map-info-card'), 'site-analysis.css contains .sa-map-info-card');
+assert(cssContent.includes('.sa-map-earth-modal'), 'site-analysis.css contains .sa-map-earth-modal');
+assert(cssContent.includes('.sa-active-site-context-card'), 'site-analysis.css contains .sa-active-site-context-card');
+
+// Dynamic Solar Tilt Integration in mode-overlays.js
+const modeOverlaysContent = fs.readFileSync('js/site-analysis/mode-overlays.js', 'utf-8');
+assert(modeOverlaysContent.includes('SiteState.getLatitude()'), 'mode-overlays.js references SiteState.getLatitude() for dynamic solar calculation');
+assert(modeOverlaysContent.includes('getSolarAltitudeTilt'), 'mode-overlays.js contains getSolarAltitudeTilt for astronomical physics');
+
+// MAP Option Integration in site-analysis-app.js
+const saAppContent = fs.readFileSync('js/site-analysis/site-analysis-app.js', 'utf-8');
+assert(saAppContent.includes('MAP'), 'site-analysis-app.js includes MAP option in Right Panel');
+assert(saAppContent.includes('map-workspace'), 'site-analysis-app.js handles map-workspace transition');
+
 console.log(`\n========================================`);
 console.log(`TEST SUMMARY: ${passed} PASSED, ${failed} FAILED`);
 console.log(`========================================\n`);

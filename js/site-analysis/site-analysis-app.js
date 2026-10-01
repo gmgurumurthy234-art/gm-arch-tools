@@ -15,8 +15,11 @@
 import { SITE_ANALYSIS_MODES } from './analysis-modes-data.js';
 import { SiteViewport } from './site-viewport.js';
 import { PLATFORM_MODULES } from '../data/modules-database.js';
+import { SiteMapEngine } from './site-map-engine.js';
+import { SiteState, formatArea } from '../state/site-state.js';
 
 let viewportInstance = null;
+let mapEngineInstance = null;
 let activeModeId = '02'; // Default: Sun Path & Solar Analysis
 let isLayersDrawerOpen = false;
 let isMassingDrawerOpen = false;
@@ -53,6 +56,9 @@ export function initSiteAnalysisApp() {
 
   // Bind Measurement HUD
   bindMeasureHUD();
+
+  // Bind Active Site HUD Buttons
+  bindActiveSiteHud();
 
   // Bind Presentation Mode & Collapsible Panels
   bindPresentationAndPanels();
@@ -178,7 +184,7 @@ function bindEdgeNav() {
 }
 
 /* ==============================================================
-   02. TOPIC LISTS RENDERING (LEFT: 01-05 | RIGHT: 06-10)
+   02. TOPIC LISTS RENDERING (LEFT: 01-05 | RIGHT: 06-10 | MAPS)
    ============================================================== */
 function renderTopicLists() {
   const leftList = document.getElementById('sa-left-topic-list');
@@ -192,7 +198,21 @@ function renderTopicLists() {
   }
 
   if (rightList) {
-    rightList.innerHTML = rightModes.map(m => renderTopicBtn(m)).join('');
+    const isMapsActive = activeModeId === 'MAPS';
+    const mapsBtnHtml = `
+      <li class="sa-maps-topic-item" style="margin-top: 8px; border-top: 1px dashed var(--sa-panel-border); padding-top: 8px;">
+        <button type="button" 
+                class="sa-topic-btn sa-maps-topic-btn ${isMapsActive ? 'active' : ''}" 
+                data-mode-id="MAPS"
+                id="sa-btn-maps-topic"
+                aria-label="Maps and Site Boundary Import Workspace">
+          <span class="sa-topic-num" style="color: #38bdf8; font-weight: 800;">MAP</span>
+          <span class="sa-topic-title" style="color: #38bdf8; font-weight: 700;">MAPS &amp; SITE IMPORT</span>
+          <span class="sa-topic-icon">🗺️</span>
+        </button>
+      </li>
+    `;
+    rightList.innerHTML = rightModes.map(m => renderTopicBtn(m)).join('') + mapsBtnHtml;
   }
 
   // Attach Click Handlers to All Topic Buttons
@@ -222,7 +242,7 @@ function renderTopicBtn(m) {
 }
 
 /* ==============================================================
-   03. MODE SWITCHER
+   03. MODE SWITCHER (MODES 01-10 & MAPS WORKSPACE)
    ============================================================== */
 export function selectAnalysisMode(modeId) {
   activeModeId = modeId;
@@ -233,23 +253,99 @@ export function selectAnalysisMode(modeId) {
     b.classList.toggle('active', b.dataset.modeId === modeId);
   });
 
-  // 2. Update Header Mode Pill
-  const modeData = SITE_ANALYSIS_MODES.find(m => m.id === modeId);
+  const mapWorkspace = document.getElementById('sa-map-workspace');
+  const viewportContainer = document.getElementById('sa-viewport-container');
+  const activeSiteHud = document.getElementById('sa-active-site-hud');
+  const legendBox = document.getElementById('sa-mode-legend');
   const pill = document.getElementById('sa-mode-indicator-text');
+
+  if (modeId === 'MAPS') {
+    if (pill) pill.textContent = 'SITE ANALYSIS // MAPS & SITE BOUNDARY IMPORT';
+    if (mapWorkspace) mapWorkspace.style.display = 'flex';
+    if (viewportContainer) viewportContainer.style.display = 'none';
+    if (activeSiteHud) activeSiteHud.style.display = 'none';
+    if (legendBox) legendBox.style.display = 'none';
+
+    // Pause 3D Viewport to ensure max performance for mapping (Section 30)
+    if (viewportInstance) viewportInstance.pause();
+
+    // Initialize Map Engine if not done yet
+    if (!mapEngineInstance) {
+      mapEngineInstance = new SiteMapEngine('sa-map-container', {
+        onSiteImported: (importedSite) => {
+          handleSiteImported(importedSite);
+        },
+        onCloseRequested: () => {
+          selectAnalysisMode('02');
+        }
+      });
+    } else {
+      mapEngineInstance.invalidateSize();
+    }
+
+    renderActiveModeDetails();
+    return;
+  }
+
+  // Non-MAPS (Modes 01 to 10):
+  if (mapWorkspace) mapWorkspace.style.display = 'none';
+  if (viewportContainer) viewportContainer.style.display = 'block';
+  if (activeSiteHud) activeSiteHud.style.display = 'flex';
+  if (legendBox) legendBox.style.display = 'block';
+
+  // Resume 3D Viewport
+  if (viewportInstance) {
+    viewportInstance.resume();
+    if (viewportInstance.overlays) {
+      viewportInstance.overlays.setMode(modeId);
+    }
+    viewportInstance.updateActiveSiteHUD(SiteState.getActiveSite());
+  }
+
+  // Update Header Mode Pill
+  const modeData = SITE_ANALYSIS_MODES.find(m => m.id === modeId);
   if (pill && modeData) {
     pill.textContent = `MODE ${modeData.num}: ${modeData.name}`;
   }
 
-  // 3. Update 3D Viewport Overlays
-  if (viewportInstance && viewportInstance.overlays) {
-    viewportInstance.overlays.setMode(modeId);
-  }
-
-  // 4. Update Viewport Legend
+  // Update Viewport Legend
   updateViewportLegend(modeData);
 
-  // 5. Render Active Mode Information & Controls
+  // Render Active Mode Information & Controls
   renderActiveModeDetails();
+}
+
+function handleSiteImported(siteData) {
+  // Return to Sun Path Analysis mode in 3D Viewport with imported site
+  selectAnalysisMode('02');
+  if (viewportInstance) {
+    viewportInstance.renderImportedBoundary(siteData);
+  }
+}
+
+function bindActiveSiteHud() {
+  const editBtn = document.getElementById('sa-btn-edit-site');
+  if (editBtn) {
+    editBtn.onclick = () => {
+      selectAnalysisMode('MAPS');
+      if (mapEngineInstance) mapEngineInstance.setEditMode(true);
+    };
+  }
+
+  const changeBtn = document.getElementById('sa-btn-change-site');
+  if (changeBtn) {
+    changeBtn.onclick = () => {
+      selectAnalysisMode('MAPS');
+      if (mapEngineInstance) {
+        mapEngineInstance.setEditMode(false);
+        mapEngineInstance.focusSearch();
+      }
+    };
+  }
+
+  if (viewportInstance) {
+    viewportInstance.updateActiveSiteHUD(SiteState.getActiveSite());
+  }
 }
 
 function updateViewportLegend(modeData) {
@@ -273,6 +369,66 @@ function updateViewportLegend(modeData) {
    04. MODE DETAILS & INTERACTIVE CONTROLS RENDERING
    ============================================================== */
 function renderActiveModeDetails() {
+  if (activeModeId === 'MAPS') {
+    const rightContainer = document.getElementById('sa-right-details-container');
+    const leftContainer = document.getElementById('sa-left-details-container');
+    if (leftContainer) leftContainer.innerHTML = '';
+    if (!rightContainer) return;
+
+    const site = SiteState.getActiveSite();
+    const areaFmt = formatArea(site.areaSqMeters || 2000);
+
+    rightContainer.innerHTML = `
+      <div class="sa-mode-controls-panel">
+        <div class="sa-controls-title">
+          <span>MAPS &amp; SITE IMPORT</span>
+          <span style="font-size: 11px; opacity: 0.7;">Active Workspace</span>
+        </div>
+        <p style="font-family: var(--sa-font-sans); font-size: 12px; color: #94a3b8; line-height: 1.5; margin: 0 0 12px 0;">
+          Search any named location or enter coordinates. Use the drafting tools to define your parcel boundary, then click <b>IMPORT TO 3D VIEWPORT</b> to transfer geometry and solar positioning into the 3D workspace.
+        </p>
+
+        <div class="sa-active-site-context-card" style="margin-bottom: 0;">
+          <div class="sa-ascc-header">
+            <span class="sa-ascc-badge">📍 SELECTED LOCATION</span>
+            <span class="sa-ascc-coords">${site.latitude.toFixed(4)}° N, ${site.longitude.toFixed(4)}° E</span>
+          </div>
+          <div class="sa-ascc-name">${site.locationName}</div>
+          <div class="sa-ascc-meta">
+            <span>Area: ${areaFmt.sqMeters}</span>
+            <span>Boundary: ${site.boundaryType}</span>
+          </div>
+          <div class="sa-ascc-status">
+            Geodesic WGS 84 coordinate reference active. Ready to import or modify boundary.
+          </div>
+        </div>
+      </div>
+
+      <div class="sa-info-card-container">
+        <div class="sa-info-block">
+          <h4 class="sa-info-heading">HOW TO USE</h4>
+          <ol style="padding-left: 16px; margin: 4px 0; font-size: 11.5px; color: var(--sa-text-muted); line-height: 1.6;">
+            <li><b>Search:</b> Type "Chennai", "Marina Beach", or coordinates "13.0827, 80.2707".</li>
+            <li><b>View:</b> Switch between NORMAL, SATELLITE, and TERRAIN layers.</li>
+            <li><b>Draft Boundary:</b> Click <b>RECTANGLE</b> or <b>POLYLINE</b> to trace site edges.</li>
+            <li><b>Import:</b> Click <b>IMPORT TO 3D VIEWPORT</b> to transfer parcel to 3D.</li>
+          </ol>
+        </div>
+
+        <div class="sa-info-block">
+          <h4 class="sa-info-heading">DATA SOURCES &amp; LICENSING</h4>
+          <div style="font-size: 11px; color: #94a3b8; line-height: 1.5;">
+            <b>Roads &amp; Buildings:</b> OpenStreetMap &amp; CartoDB Voyager<br>
+            <b>Satellite Imagery:</b> Esri World Imagery (Maxar/USGS)<br>
+            <b>Contours:</b> SRTM Digital Elevation Model via OpenTopoMap<br>
+            <b>Google Maps:</b> Official Maps Platform API integration supported.
+          </div>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
   const mode = SITE_ANALYSIS_MODES.find(m => m.id === activeModeId);
   if (!mode) return;
 
@@ -288,7 +444,12 @@ function renderActiveModeDetails() {
   if (otherContainer) otherContainer.innerHTML = '';
   if (!targetContainer) return;
 
+  const activeSite = SiteState.getActiveSite();
+
   targetContainer.innerHTML = `
+    <!-- Active Site Context Card (Iteration 06 Location-Awareness) -->
+    ${renderActiveSiteContextCard(activeSite, mode)}
+
     <!-- Interactive Mode Controls Section -->
     <div class="sa-mode-controls-panel">
       <div class="sa-controls-title">
@@ -366,6 +527,64 @@ function renderActiveModeDetails() {
 
   // Bind Events for Active Mode Controls
   bindModeSpecificControls(mode);
+}
+
+function renderActiveSiteContextCard(site, mode) {
+  if (!site) site = SiteState.getActiveSite();
+  const areaFmt = formatArea(site.areaSqMeters || 2000);
+
+  let statusStatement = '';
+  switch (mode.id) {
+    case '01': // Climate
+      statusStatement = `Active Site: ${site.city || site.locationName}. Climate classification active. Hourly TMY3/EPW weather dataset integration required.`;
+      break;
+    case '02': // Sun Path
+      statusStatement = `Active Site: ${site.city || site.locationName}. Latitude ${site.latitude.toFixed(4)}° dynamically calculates true NOAA solar declination and zenith trajectory.`;
+      break;
+    case '03': // Wind
+      statusStatement = `Active Site: ${site.city || site.locationName}. Location-specific anemometer / IMD weather station dataset integration required for measured wind roses. Conceptual aerodynamic streamlines active.`;
+      break;
+    case '04': // Orientation
+      statusStatement = `Active Site: ${site.city || site.locationName}. Cardinal alignment (East sunrise, South zenith, West sunset, True North) mapped to WGS 84 datum.`;
+      break;
+    case '05': // Topography
+      statusStatement = `Active Site: ${site.city || site.locationName}. High-resolution LiDAR / SRTM DEM elevation dataset integration required for parcel contours. Conceptual grading plane active.`;
+      break;
+    case '06': // Access
+      statusStatement = `Active Site: ${site.city || site.locationName}. Site boundary footprint (${areaFmt.sqMeters}) mapped to urban access context.`;
+      break;
+    case '07': // Vegetation
+      statusStatement = `Active Site: ${site.city || site.locationName}. Regional canopy coverage analysis. Multispectral NDVI satellite dataset integration required.`;
+      break;
+    case '08': // Views
+      statusStatement = `Active Site: ${site.city || site.locationName}. Site-centric panoramic view corridors and visual sightline isovists active.`;
+      break;
+    case '09': // Noise
+      statusStatement = `Active Site: ${site.city || site.locationName}. Municipal acoustic sensor / decibel monitoring integration required. Conceptual attenuation active.`;
+      break;
+    case '10': // Utilities
+      statusStatement = `Active Site: ${site.city || site.locationName}. Municipal GIS utility infrastructure network integration required. Conceptual service points active.`;
+      break;
+    default:
+      statusStatement = `Active Location: ${site.locationName} (${site.latitude.toFixed(4)}°, ${site.longitude.toFixed(4)}°).`;
+  }
+
+  return `
+    <div class="sa-active-site-context-card">
+      <div class="sa-ascc-header">
+        <span class="sa-ascc-badge">📍 ACTIVE SITE CONTEXT</span>
+        <span class="sa-ascc-coords">${site.latitude.toFixed(4)}° N, ${site.longitude.toFixed(4)}° E</span>
+      </div>
+      <div class="sa-ascc-name">${site.locationName}</div>
+      <div class="sa-ascc-meta">
+        <span>Area: ${areaFmt.sqMeters}</span>
+        <span>Boundary: ${site.boundaryType}</span>
+      </div>
+      <div class="sa-ascc-status">
+        ${statusStatement}
+      </div>
+    </div>
+  `;
 }
 
 function renderModeSpecificControls(mode) {

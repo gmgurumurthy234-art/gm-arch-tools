@@ -8,6 +8,8 @@
  *   - High-performance GPU rendering: Object reuse, zero garbage collection in animation loop
  */
 
+import { SiteState } from '../state/site-state.js';
+
 export class ModeOverlays {
   constructor(scene, massingController) {
     this.scene = scene;
@@ -81,6 +83,12 @@ export class ModeOverlays {
     };
 
     this.initAllModes();
+
+    // Subscribe to SiteState for dynamic solar path recalculations
+    SiteState.subscribe(() => {
+      this.rebuildSunArc();
+      this.updateSunPosition();
+    });
   }
 
   initAllModes() {
@@ -238,6 +246,18 @@ export class ModeOverlays {
     this.updateSunPosition();
   }
 
+  getSolarAltitudeTilt() {
+    const lat = SiteState.getLatitude(); // e.g. 13.0827 for Chennai
+    const { season } = this.sunState;
+    let declination = 0;
+    if (season === 'SUMMER') declination = 23.45;
+    if (season === 'WINTER') declination = -23.45;
+
+    // Solar noon altitude: alpha_noon = 90 - |lat| + declination (for northern hemisphere)
+    const solarNoonAltitudeDeg = Math.max(8, Math.min(89.5, 90 - Math.abs(lat) + (lat >= 0 ? declination : -declination)));
+    return (solarNoonAltitudeDeg * Math.PI) / 180;
+  }
+
   rebuildSunArc() {
     const grp = this.groups['02'];
     if (this.sunArcLine) {
@@ -246,10 +266,7 @@ export class ModeOverlays {
     }
 
     const R = this.sunState.arcRadius;
-    const { season } = this.sunState;
-    let latTilt = Math.PI / 3; // ~60° at Equinox
-    if (season === 'SUMMER') latTilt = Math.PI / 2.3; // Higher noon sun (~78°)
-    if (season === 'WINTER') latTilt = Math.PI / 4.2; // Lower winter sun (~42°)
+    const latTilt = this.getSolarAltitudeTilt();
 
     // Arc from East (+X) to West (-X) via South (+Z)
     const curvePoints = [];
@@ -279,14 +296,12 @@ export class ModeOverlays {
   updateSunPosition() {
     if (!this.sunSphere || !this.sunLight) return;
 
-    const { hour, arcRadius, season } = this.sunState;
+    const { hour, arcRadius } = this.sunState;
     // Map hour 6.0 (East) -> 12.0 (South) -> 18.0 (West)
     const t = (hour - 6) / 12; // 0 at 06:00, 0.5 at 12:00, 1.0 at 18:00
     const angle = t * Math.PI;
 
-    let latTilt = Math.PI / 3;
-    if (season === 'SUMMER') latTilt = Math.PI / 2.3;
-    if (season === 'WINTER') latTilt = Math.PI / 4.2;
+    const latTilt = this.getSolarAltitudeTilt();
 
     const x = arcRadius * Math.cos(angle);
     const y = Math.max(0.6, arcRadius * Math.sin(angle) * Math.sin(latTilt));

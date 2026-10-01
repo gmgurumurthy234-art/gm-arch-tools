@@ -12,6 +12,7 @@
 
 import { MassingController } from './massing-controller.js';
 import { ModeOverlays } from './mode-overlays.js';
+import { SiteState, formatArea } from '../state/site-state.js';
 
 export class SiteViewport {
   constructor(canvasContainerId) {
@@ -40,6 +41,7 @@ export class SiteViewport {
     this.gridHelper = null;
     this.axisHelper = null;
     this.boundaryLine = null;
+    this.boundaryGroup = null;
     this.groundMesh = null;
     this.massing = null;
     this.overlays = null;
@@ -161,30 +163,11 @@ export class SiteViewport {
     this.groundMesh.name = 'GroundPlane';
     this.scene.add(this.groundMesh);
 
-    // 4. Site Boundary Outline (Dashed CAD Polygon, 50m x 40m)
-    // Coords: X: -25 to +25, Z: -20 to +20
-    const bW = 25;
-    const bD = 20;
-    const boundaryPoints = [
-      new THREE.Vector3(-bW, 0.05, -bD),
-      new THREE.Vector3(bW, 0.05, -bD),
-      new THREE.Vector3(bW, 0.05, bD),
-      new THREE.Vector3(-bW, 0.05, bD),
-      new THREE.Vector3(-bW, 0.05, -bD)
-    ];
-    const boundaryGeom = new THREE.BufferGeometry().setFromPoints(boundaryPoints);
-    const boundaryMat = new THREE.LineDashedMaterial({
-      color: 0x38bdf8,
-      dashSize: 2.5,
-      gapSize: 1.5,
-      linewidth: 2,
-      transparent: true,
-      opacity: 0.9
+    // 4. Dynamic Site Boundary (Imported from Map Engine or Default)
+    this.renderImportedBoundary(SiteState.getActiveSite());
+    this.unsubscribeSite = SiteState.subscribe(site => {
+      this.renderImportedBoundary(site);
     });
-    this.boundaryLine = new THREE.Line(boundaryGeom, boundaryMat);
-    this.boundaryLine.computeLineDistances();
-    this.boundaryLine.name = 'SiteBoundaryLine';
-    this.scene.add(this.boundaryLine);
 
     // 5. Origin Axes (X: Red, Y: Green, Z: Blue)
     this.axisHelper = new THREE.AxesHelper(14);
@@ -429,6 +412,138 @@ export class SiteViewport {
   }
 
   /* ==============================================================
+     DYNAMIC SITE BOUNDARY & ACTIVE SITE HUD (ITERATION 06)
+     ============================================================== */
+  renderImportedBoundary(siteData) {
+    if (!siteData) siteData = SiteState.getActiveSite();
+
+    // Dispose old boundary objects
+    if (this.boundaryGroup) {
+      this.scene.remove(this.boundaryGroup);
+      this.boundaryGroup.traverse(child => {
+        if (child.geometry) child.geometry.dispose();
+        if (child.material) child.material.dispose();
+      });
+      this.boundaryGroup = null;
+    }
+
+    this.boundaryGroup = new THREE.Group();
+    this.boundaryGroup.name = 'SiteBoundaryGroup';
+
+    let points3D = [];
+    if (siteData.boundary3D && siteData.boundary3D.length >= 3) {
+      // Normalization scale for architectural viewport if user selected an immense parcel
+      const maxDist = Math.max(...siteData.boundary3D.map(p => Math.sqrt(p.x * p.x + p.z * p.z)));
+      let scale = 1.0;
+      if (maxDist > 140) {
+        scale = 80 / maxDist;
+      }
+
+      points3D = siteData.boundary3D.map(p => new THREE.Vector3(p.x * scale, 0.05, p.z * scale));
+    } else {
+      // Default 50m x 40m rectangular boundary
+      const bW = 25;
+      const bD = 20;
+      points3D = [
+        new THREE.Vector3(-bW, 0.05, -bD),
+        new THREE.Vector3(bW, 0.05, -bD),
+        new THREE.Vector3(bW, 0.05, bD),
+        new THREE.Vector3(-bW, 0.05, bD)
+      ];
+    }
+
+    // 1. Closed Outline Line
+    const closedPoints = [...points3D, points3D[0]];
+    const boundaryGeom = new THREE.BufferGeometry().setFromPoints(closedPoints);
+    const boundaryMat = new THREE.LineDashedMaterial({
+      color: 0x38bdf8,
+      dashSize: 2.0,
+      gapSize: 1.2,
+      linewidth: 2.5,
+      transparent: true,
+      opacity: this.layers.site.opacity
+    });
+    this.boundaryLine = new THREE.Line(boundaryGeom, boundaryMat);
+    this.boundaryLine.computeLineDistances();
+    this.boundaryLine.name = 'SiteBoundaryLine';
+    this.boundaryGroup.add(this.boundaryLine);
+
+    // 2. Glowing Corner Vertices
+    const vGeom = new THREE.SphereGeometry(0.4, 14, 14);
+    const vMat = new THREE.MeshBasicMaterial({
+      color: 0x38bdf8,
+      transparent: true,
+      opacity: this.layers.site.opacity
+    });
+    points3D.forEach(pt => {
+      const vDot = new THREE.Mesh(vGeom, vMat);
+      vDot.position.copy(pt);
+      this.boundaryGroup.add(vDot);
+    });
+
+    // 3. Subtle Translucent Ground Footprint Fill
+    if (points3D.length >= 3) {
+      try {
+        const shape = new THREE.Shape();
+        shape.moveTo(points3D[0].x, points3D[0].z);
+        for (let i = 1; i < points3D.length; i++) {
+          shape.lineTo(points3D[i].x, points3D[i].z);
+        }
+        shape.closePath();
+        const fillGeom = new THREE.ShapeGeometry(shape);
+        const fillMat = new THREE.MeshBasicMaterial({
+          color: 0x38bdf8,
+          transparent: true,
+          opacity: 0.07 * this.layers.site.opacity,
+          side: THREE.DoubleSide
+        });
+        const fillMesh = new THREE.Mesh(fillGeom, fillMat);
+        fillMesh.rotation.x = Math.PI / 2;
+        fillMesh.position.y = 0.02;
+        this.boundaryGroup.add(fillMesh);
+      } catch (e) {
+        // Fallback for self-intersecting polygon
+      }
+    }
+
+    this.scene.add(this.boundaryGroup);
+    this.updateActiveSiteHUD(siteData);
+  }
+
+  updateActiveSiteHUD(siteData) {
+    if (!siteData) siteData = SiteState.getActiveSite();
+    const hud = document.getElementById('sa-active-site-hud');
+    if (!hud) return;
+
+    const nameEl = document.getElementById('sa-ash-location-name');
+    const coordsEl = document.getElementById('sa-ash-coords');
+    const areaEl = document.getElementById('sa-ash-area');
+    const boundEl = document.getElementById('sa-ash-boundary');
+
+    if (nameEl) nameEl.textContent = siteData.locationName || 'Active Site';
+    if (coordsEl) {
+      const lat = siteData.latitude || 13.0827;
+      const lng = siteData.longitude || 80.2707;
+      coordsEl.textContent = `${lat.toFixed(4)}° ${lat >= 0 ? 'N' : 'S'}, ${lng.toFixed(4)}° ${lng >= 0 ? 'E' : 'W'}`;
+    }
+    if (areaEl) {
+      const fmt = formatArea(siteData.areaSqMeters || 2000);
+      areaEl.textContent = `Area: ${fmt.sqMeters} (${fmt.acres})`;
+    }
+    if (boundEl) {
+      if (siteData.boundaryType === 'RECTANGLE' && siteData.dimensions) {
+        boundEl.textContent = `Boundary: ${siteData.dimensions.widthMetres}m × ${siteData.dimensions.lengthMetres}m`;
+      } else if (siteData.boundary3D) {
+        boundEl.textContent = `Boundary: Custom (${siteData.boundary3D.length} Vertices)`;
+      } else {
+        boundEl.textContent = 'Boundary: Defined';
+      }
+    }
+
+    hud.style.display = 'flex';
+  }
+
+  /* ==============================================================
      MASTER LAYER CONTROL & TRANSPARENCY
      ============================================================== */
   setLayerVisibility(layer, isVisible) {
@@ -447,8 +562,9 @@ export class SiteViewport {
       const gizmo = document.getElementById('sa-north-gizmo');
       if (gizmo) gizmo.style.display = isVisible ? 'flex' : 'none';
     }
-    if (layer === 'site' && this.boundaryLine) {
-      this.boundaryLine.visible = isVisible;
+    if (layer === 'site') {
+      if (this.boundaryGroup) this.boundaryGroup.visible = isVisible;
+      if (this.boundaryLine) this.boundaryLine.visible = isVisible;
     }
     if (layer === 'shadows' && this.groundMesh) {
       this.groundMesh.visible = isVisible;
@@ -470,8 +586,17 @@ export class SiteViewport {
     if (layer === 'grid' && this.gridHelper) {
       this.gridHelper.material.opacity = op;
     }
-    if (layer === 'site' && this.boundaryLine) {
-      this.boundaryLine.material.opacity = op;
+    if (layer === 'site') {
+      if (this.boundaryLine && this.boundaryLine.material) {
+        this.boundaryLine.material.opacity = op;
+      }
+      if (this.boundaryGroup) {
+        this.boundaryGroup.traverse(c => {
+          if (c.isMesh && c.material) {
+            c.material.opacity = 0.07 * op;
+          }
+        });
+      }
     }
     if (layer === 'shadows' && this.groundMesh) {
       this.groundMesh.material.opacity = 0.45 * op;
@@ -538,6 +663,10 @@ export class SiteViewport {
 
   destroy() {
     this.isRendering = false;
+    if (this.unsubscribeSite) {
+      this.unsubscribeSite();
+      this.unsubscribeSite = null;
+    }
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
     }
