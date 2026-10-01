@@ -26,8 +26,22 @@
 }
 
 /* ==============================================================
-   FULLSCREEN WORKSTATION OVERRIDE
+   FULLSCREEN WORKSTATION OVERRIDE & PORTAL ISOLATION
+   Strict isolation: When NOT active, #basic-tools-view is strictly
+   hidden and occupies zero layout space or height.
    ============================================================== */
+body:not(.basic-tools-active) #basic-tools-view,
+.basic-tools-view:not(.active-view) {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
 body.basic-tools-active {
   overflow: hidden !important;
 }
@@ -39,6 +53,9 @@ body.basic-tools-active .site-footer {
 }
 
 body.basic-tools-active #basic-tools-view {
+  display: flex !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
   position: fixed !important;
   inset: 0 !important;
   width: 100vw !important;
@@ -52,13 +69,17 @@ body.basic-tools-active #basic-tools-view {
    BASIC TOOLS WORKSPACE VIEWPORT SHELL
    ============================================================== */
 .basic-tools-view {
-  display: flex;
+  display: none;
   flex-direction: column;
   width: 100%;
   height: 100vh;
   background: var(--bt-bg);
   position: relative;
   overflow: hidden;
+}
+
+.basic-tools-view.active-view {
+  display: flex;
 }
 
 /* Top Header Bar */

@@ -27,10 +27,22 @@
 }
 
 /* ==============================================================
-   01. FULLSCREEN DEDICATED WORKSTATION STATE
-   When body.site-analysis-active is present:
-   Hide main website header, breadcrumbs, and footer.
+   01. FULLSCREEN DEDICATED WORKSTATION STATE & PORTAL ISOLATION
+   Strict isolation: When NOT active, #site-analysis-view is strictly
+   hidden and occupies zero layout space or height.
    ============================================================== */
+body:not(.site-analysis-active) #site-analysis-view,
+.site-analysis-view:not(.active-view) {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
 body.site-analysis-active {
   overflow: hidden !important;
 }
@@ -42,6 +54,9 @@ body.site-analysis-active .site-footer {
 }
 
 body.site-analysis-active #site-analysis-view {
+  display: flex !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
   position: fixed !important;
   inset: 0 !important;
   width: 100vw !important;
@@ -240,13 +255,17 @@ body.site-analysis-active .sa-workspace-body {
    03. TOP NAVIGATION & STATUS BAR
    ============================================================== */
 .site-analysis-view {
-  display: flex;
+  display: none;
   flex-direction: column;
   width: 100%;
   min-height: calc(100vh - 120px);
   background: var(--sa-bg);
   position: relative;
   overflow: hidden;
+}
+
+.site-analysis-view.active-view {
+  display: flex;
 }
 
 .sa-header-bar {

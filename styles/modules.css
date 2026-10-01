@@ -103,6 +103,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 20px;
+  margin-bottom: 48px;
 }
 
 .module-card {
@@ -266,13 +267,20 @@
 
 /* ==============================================================
    VIEW SWITCHING (PLATFORM HUB vs MODULE WORKSPACE)
+   Strict Portal Isolation: A module workspace must NEVER render
+   inside, below, behind, or alongside the All Modules portal.
    ============================================================== */
 .portal-view {
-  display: none;
+  display: none !important;
 }
 
 .portal-view.active-view {
-  display: block;
+  display: block !important;
+}
+
+.portal-view.site-analysis-view.active-view,
+.portal-view.basic-tools-view.active-view {
+  display: flex !important;
 }
 
 /* Back to Modules Bar inside a Module */

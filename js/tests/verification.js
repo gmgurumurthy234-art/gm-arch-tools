@@ -436,6 +436,9 @@ assert(ProjectState.getAssets().length === 0, 'Asset successfully removed from P
 
 // Basic Tools DOM Elements in index.html & styles
 const basicCssContent = fs.readFileSync('styles/basic-tools.css', 'utf-8');
+const modulesCssContent = fs.readFileSync('styles/modules.css', 'utf-8');
+const appJsContent = fs.readFileSync('js/ui/app.js', 'utf-8');
+
 assert(indexHtmlContent.includes('id="basic-tools-view"'), 'index.html contains #basic-tools-view');
 assert(indexHtmlContent.includes('id="bt-edge-nav-trigger"'), 'index.html contains #bt-edge-nav-trigger');
 assert(indexHtmlContent.includes('id="bt-edge-nav-drawer"'), 'index.html contains #bt-edge-nav-drawer');
@@ -444,6 +447,18 @@ assert(indexHtmlContent.includes('id="bt-stage-container"'), 'index.html contain
 assert(indexHtmlContent.includes('id="bt-assets-list"'), 'index.html contains #bt-assets-list');
 assert(basicCssContent.includes('body.basic-tools-active'), 'styles/basic-tools.css contains body.basic-tools-active');
 assert(basicCssContent.includes('.bt-workspace-body'), 'styles/basic-tools.css contains .bt-workspace-body');
+
+// 9. STRICT PORTAL ISOLATION & LEAKAGE PREVENTION TESTS
+console.log('\n--- 9. Testing Strict Portal Isolation & Workspace Containment ---');
+assert(modulesCssContent.includes('.portal-view {\n  display: none !important;'), 'styles/modules.css enforces .portal-view display: none !important');
+assert(cssContent.includes('body:not(.site-analysis-active) #site-analysis-view'), 'styles/site-analysis.css hides site analysis when inactive');
+assert(basicCssContent.includes('body:not(.basic-tools-active) #basic-tools-view'), 'styles/basic-tools.css hides basic tools when inactive');
+assert(indexHtmlContent.includes('id="arch-calculatives-view" class="portal-view" style="display: none;"'), 'index.html pre-hides arch-calculatives-view');
+assert(indexHtmlContent.includes('id="site-analysis-view" class="portal-view site-analysis-view" style="display: none;"'), 'index.html pre-hides site-analysis-view');
+assert(indexHtmlContent.includes('id="basic-tools-view" class="portal-view basic-tools-view" style="display: none;"'), 'index.html pre-hides basic-tools-view');
+assert(appJsContent.includes("saView.style.display = 'none';"), 'app.js explicitly hides saView in portal hub state');
+assert(appJsContent.includes("calcView.style.display = 'none';"), 'app.js explicitly hides calcView in portal hub state');
+assert(appJsContent.includes("btView.style.display = 'none';"), 'app.js explicitly hides btView in portal hub state');
 
 console.log(`\n========================================`);
 console.log(`TEST SUMMARY: ${passed} PASSED, ${failed} FAILED`);

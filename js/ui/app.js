@@ -90,10 +90,22 @@ export function showPlatformHub(updateHash = true, viewMode = 'wedges') {
   const btnWedges = document.getElementById('toggle-view-wedges');
   const btnGrid = document.getElementById('toggle-view-grid');
 
-  if (hubView) hubView.classList.add('active-view');
-  if (calcView) calcView.classList.remove('active-view');
-  if (saView) saView.classList.remove('active-view');
-  if (btView) btView.classList.remove('active-view');
+  if (hubView) {
+    hubView.classList.add('active-view');
+    hubView.style.display = 'block';
+  }
+  if (calcView) {
+    calcView.classList.remove('active-view');
+    calcView.style.display = 'none';
+  }
+  if (saView) {
+    saView.classList.remove('active-view');
+    saView.style.display = 'none';
+  }
+  if (btView) {
+    btView.classList.remove('active-view');
+    btView.style.display = 'none';
+  }
 
   if (viewMode === 'grid') {
     document.body.classList.remove('home-portal-active');
@@ -132,10 +144,22 @@ export function showArchCalculatives(updateHash = true) {
   const saView = document.getElementById('site-analysis-view');
   const btView = document.getElementById('basic-tools-view');
 
-  if (hubView) hubView.classList.remove('active-view');
-  if (calcView) calcView.classList.add('active-view');
-  if (saView) saView.classList.remove('active-view');
-  if (btView) btView.classList.remove('active-view');
+  if (hubView) {
+    hubView.classList.remove('active-view');
+    hubView.style.display = 'none';
+  }
+  if (calcView) {
+    calcView.classList.add('active-view');
+    calcView.style.display = 'block';
+  }
+  if (saView) {
+    saView.classList.remove('active-view');
+    saView.style.display = 'none';
+  }
+  if (btView) {
+    btView.classList.remove('active-view');
+    btView.style.display = 'none';
+  }
 
   setSidebarActive('all-modules');
   updateBreadcrumbs(['GM ARCH TOOLS', 'ARCH CALCULATIVES']);
@@ -158,10 +182,22 @@ export function showSiteAnalysis(updateHash = true) {
   const saView = document.getElementById('site-analysis-view');
   const btView = document.getElementById('basic-tools-view');
 
-  if (hubView) hubView.classList.remove('active-view');
-  if (calcView) calcView.classList.remove('active-view');
-  if (saView) saView.classList.add('active-view');
-  if (btView) btView.classList.remove('active-view');
+  if (hubView) {
+    hubView.classList.remove('active-view');
+    hubView.style.display = 'none';
+  }
+  if (calcView) {
+    calcView.classList.remove('active-view');
+    calcView.style.display = 'none';
+  }
+  if (saView) {
+    saView.classList.add('active-view');
+    saView.style.display = 'flex';
+  }
+  if (btView) {
+    btView.classList.remove('active-view');
+    btView.style.display = 'none';
+  }
 
   setSidebarActive('all-modules');
   updateBreadcrumbs(['GM ARCH TOOLS', 'SITE ANALYSIS']);
@@ -190,10 +226,22 @@ export function showBasicTools(updateHash = true) {
   const saView = document.getElementById('site-analysis-view');
   const btView = document.getElementById('basic-tools-view');
 
-  if (hubView) hubView.classList.remove('active-view');
-  if (calcView) calcView.classList.remove('active-view');
-  if (saView) saView.classList.remove('active-view');
-  if (btView) btView.classList.add('active-view');
+  if (hubView) {
+    hubView.classList.remove('active-view');
+    hubView.style.display = 'none';
+  }
+  if (calcView) {
+    calcView.classList.remove('active-view');
+    calcView.style.display = 'none';
+  }
+  if (saView) {
+    saView.classList.remove('active-view');
+    saView.style.display = 'none';
+  }
+  if (btView) {
+    btView.classList.add('active-view');
+    btView.style.display = 'flex';
+  }
 
   setSidebarActive('all-modules');
   updateBreadcrumbs(['GM ARCH TOOLS', 'BASIC TOOLS']);
