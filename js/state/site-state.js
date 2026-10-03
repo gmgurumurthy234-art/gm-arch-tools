@@ -164,38 +164,38 @@ export function parseCoordinates(input) {
  */
 class SiteStateManager {
   constructor() {
-    this.storageKey = 'gm_arch_tools_active_site_v6';
+    this.storageKey = 'gm_arch_tools_active_site_v6_2';
     this.listeners = new Set();
 
-    // Default Site: Chennai, Tamil Nadu, India (As highlighted in the brief)
+    // Default Site: Adhiyamaan College of Engineering, Hosur, Tamil Nadu, India
     this.site = {
       isImported: true,
-      locationName: 'Chennai, Tamil Nadu, India',
-      city: 'Chennai',
+      locationName: 'Adhiyamaan College of Engineering, Hosur, Tamil Nadu, India',
+      city: 'Hosur',
       state: 'Tamil Nadu',
       country: 'India',
-      latitude: 13.0827,
-      longitude: 80.2707,
+      latitude: 12.7152,
+      longitude: 77.8678,
       boundaryType: 'RECTANGLE', // 'RECTANGLE' | 'POLYGON' | 'NONE'
       boundaryGeo: [
-        { lat: 13.0837, lng: 80.2697 },
-        { lat: 13.0837, lng: 80.2717 },
-        { lat: 13.0817, lng: 80.2717 },
-        { lat: 13.0817, lng: 80.2697 }
+        { lat: 12.7161, lng: 77.8669 },
+        { lat: 12.7161, lng: 77.8687 },
+        { lat: 12.7143, lng: 77.8687 },
+        { lat: 12.7143, lng: 77.8669 }
       ],
       boundary3D: [
-        { x: -25, z: -20, lat: 13.0837, lng: 80.2697 },
-        { x: 25, z: -20, lat: 13.0837, lng: 80.2717 },
-        { x: 25, z: 20, lat: 13.0817, lng: 80.2717 },
-        { x: -25, z: 20, lat: 13.0817, lng: 80.2697 }
+        { x: -25, z: -20, lat: 12.7161, lng: 77.8669 },
+        { x: 25, z: -20, lat: 12.7161, lng: 77.8687 },
+        { x: 25, z: 20, lat: 12.7143, lng: 77.8687 },
+        { x: -25, z: 20, lat: 12.7143, lng: 77.8669 }
       ],
       dimensions: {
-        widthMetres: 50,
-        lengthMetres: 40
+        widthMetres: 200,
+        lengthMetres: 200
       },
-      areaSqMeters: 2000,
-      areaAcres: 0.494,
-      areaSqFt: 21528,
+      areaSqMeters: 40000,
+      areaAcres: 9.88,
+      areaSqFt: 430556,
       coordinateReference: 'WGS 84 (EPSG:4326)',
       importTimestamp: new Date().toISOString(),
       sourceAttribution: 'GM Architectural Geodesic Engine & OpenStreetMap / Esri'

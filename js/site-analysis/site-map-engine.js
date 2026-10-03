@@ -18,7 +18,7 @@ import {
   convertGeoToLocal3D,
   formatArea,
   parseCoordinates
-} from '../state/site-state.js';
+} from '../state/site-state.js?v=6.2.5';
 
 export class SiteMapEngine {
   constructor(containerId, options = {}) {
@@ -53,13 +53,13 @@ export class SiteMapEngine {
     // Current Selected Site Data (pre-import preview)
     const initialSite = SiteState.getActiveSite();
     this.currentSite = {
-      locationName: initialSite.locationName || 'Chennai, Tamil Nadu, India',
-      lat: initialSite.latitude || 13.0827,
-      lng: initialSite.longitude || 80.2707,
+      locationName: initialSite.locationName || 'Adhiyamaan College of Engineering, Hosur, Tamil Nadu, India',
+      lat: initialSite.latitude || 12.7152,
+      lng: initialSite.longitude || 77.8678,
       boundaryType: initialSite.boundaryType || 'RECTANGLE',
       boundaryGeo: initialSite.boundaryGeo || [],
-      areaSqMeters: initialSite.areaSqMeters || 2000,
-      dimensions: initialSite.dimensions || { widthMetres: 50, lengthMetres: 40 },
+      areaSqMeters: initialSite.areaSqMeters || 40000,
+      dimensions: initialSite.dimensions || { widthMetres: 200, lengthMetres: 200 },
       isImported: true
     };
 
@@ -99,6 +99,16 @@ export class SiteMapEngine {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'
       }
     );
+    // Automatic high-availability fallback: if an individual OSM tile errors, load from Esri World Street Map
+    this.tileLayers.NORMAL.on('tileerror', (event) => {
+      if (event && event.tile && !event.tile._fallbackAttempted) {
+        event.tile._fallbackAttempted = true;
+        const coords = event.coords;
+        if (coords) {
+          event.tile.src = `https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/${coords.z}/${coords.y}/${coords.x}`;
+        }
+      }
+    });
 
     // 2. SATELLITE: Esri World Imagery (high resolution aerial photography)
     this.tileLayers.SATELLITE = L.tileLayer(

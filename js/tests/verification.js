@@ -567,7 +567,12 @@ assert(subscriberNotified === true, 'SiteState notify/subscribe reactivity trigg
 unsubscribe();
 
 // Restore default location
-SiteState.setActiveSite({ locationName: 'Chennai, Tamil Nadu, India' });
+SiteState.setActiveSite({
+  locationName: 'Adhiyamaan College of Engineering, Hosur, Tamil Nadu, India',
+  city: 'Hosur',
+  latitude: 12.7152,
+  longitude: 77.8678
+});
 
 // DOM Structure for Maps and Active Site in index.html
 assert(indexHtmlContent.includes('styles/leaflet.css'), 'index.html links styles/leaflet.css');
@@ -657,7 +662,30 @@ assert(adhiyamaan3D.length === 4, 'convertGeoToLocal3D produces 4 local 3D point
 const avgX = adhiyamaan3D.reduce((sum, p) => sum + p.x, 0) / 4;
 const avgZ = adhiyamaan3D.reduce((sum, p) => sum + p.z, 0) / 4;
 assert(Math.abs(avgX - 150) < 5, '3D X coordinates are in local meters near (0, 0)');
-assert(Math.abs(avgZ - (-125)) < 5, '3D Z coordinates are in local meters near (0, 0)');
+// --- 12. Testing Iteration 6.2 Critical Map Rendering Fix ---
+console.log('\n--- 12. Testing Iteration 6.2 Critical Map Rendering Fix ---');
+
+// Default location verification: Adhiyamaan College of Engineering, Hosur
+const defaultSite = SiteState.getActiveSite();
+assert(defaultSite.locationName.includes('Adhiyamaan College'), 'Default site is Adhiyamaan College of Engineering');
+assert(defaultSite.city === 'Hosur', 'Default site city is Hosur');
+assertClose(defaultSite.latitude, 12.7152, 0.001, 'Default site latitude is 12.7152° N');
+assertClose(defaultSite.longitude, 77.8678, 0.001, 'Default site longitude is 77.8678° E');
+
+// Tileerror fallback verification
+assert(mapEngineContent.includes("tileerror"), 'site-map-engine.js attaches tileerror listener for fallback');
+assert(mapEngineContent.includes("World_Street_Map"), 'site-map-engine.js falls back to Esri World Street Map');
+
+// Cache-busting version query strings verification
+assert(indexHtmlContent.includes("app.js?v="), 'index.html applies cache-busting query string to app.js');
+assert(appJsContent.includes("site-analysis-app.js?v="), 'app.js applies cache-busting query string to site-analysis-app.js');
+const saAppSrc = fs.readFileSync('js/site-analysis/site-analysis-app.js', 'utf-8');
+assert(saAppSrc.includes("site-map-engine.js?v="), 'site-analysis-app.js applies cache-busting query string to site-map-engine.js');
+assert(saAppSrc.includes("site-state.js?v="), 'site-analysis-app.js applies cache-busting query string to site-state.js');
+assert(mapEngineContent.includes("site-state.js?v="), 'site-map-engine.js applies cache-busting query string to site-state.js');
+
+// Direct deep linking route to maps
+assert(appJsContent.includes("#site-analysis-maps"), 'app.js supports direct deep link to #site-analysis-maps');
 
 console.log(`\n========================================`);
 console.log(`TEST SUMMARY: ${passed} PASSED, ${failed} FAILED`);

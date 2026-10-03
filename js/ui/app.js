@@ -11,7 +11,7 @@ import { initIntro } from '../intro.js';
 import { initModal, openToolModal } from './modal-controller.js';
 import { initAccountManager } from '../auth/account-manager.js';
 import { initWedgeCarousel, setActiveModule } from './wedge-carousel.js';
-import { initSiteAnalysisApp, selectAnalysisMode, pauseSiteAnalysis, resumeSiteAnalysis } from '../site-analysis/site-analysis-app.js';
+import { initSiteAnalysisApp, selectAnalysisMode, pauseSiteAnalysis, resumeSiteAnalysis } from '../site-analysis/site-analysis-app.js?v=6.2.5';
 import { initBasicToolsApp } from '../basic-tools/basic-tools-app.js';
 
 let currentView = 'HUB'; // 'HUB' | 'CALCULATIVES' | 'SITE_ANALYSIS' | 'BASIC_TOOLS'
@@ -437,6 +437,11 @@ function checkUrlHash() {
     }
   } else if (hash === '#site-analysis' || hash === '#module-03') {
     showSiteAnalysis(false);
+  } else if (hash === '#site-analysis-maps') {
+    showSiteAnalysis(false);
+    setTimeout(() => {
+      selectAnalysisMode('MAPS');
+    }, 60);
   } else if (hash === '#arch-calculatives' || hash === '#module-01') {
     showArchCalculatives(false);
   } else if (hash === '#basic-tools' || hash === '#module-13') {

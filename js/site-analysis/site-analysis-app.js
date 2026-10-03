@@ -15,8 +15,8 @@
 import { SITE_ANALYSIS_MODES } from './analysis-modes-data.js';
 import { SiteViewport } from './site-viewport.js';
 import { PLATFORM_MODULES } from '../data/modules-database.js';
-import { SiteMapEngine } from './site-map-engine.js';
-import { SiteState, formatArea } from '../state/site-state.js';
+import { SiteMapEngine } from './site-map-engine.js?v=6.2.5';
+import { SiteState, formatArea } from '../state/site-state.js?v=6.2.5';
 
 let viewportInstance = null;
 let mapEngineInstance = null;
