@@ -91,13 +91,12 @@ export class SiteMapEngine {
     });
 
     // Custom Architectural Tile Providers:
-    // 1. NORMAL: CartoDB Voyager / OpenStreetMap (clean, high contrast, crisp linework)
+    // 1. NORMAL: OpenStreetMap Standard (clean, reliable, global coverage, no API key required)
     this.tileLayers.NORMAL = L.tileLayer(
-      'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+      'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
       {
         maxZoom: 19,
-        subdomains: 'abcd',
-        attribution: '&copy; CartoDB &copy; OpenStreetMap contributors'
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'
       }
     );
 
@@ -106,7 +105,7 @@ export class SiteMapEngine {
       'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
       {
         maxZoom: 19,
-        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, USDA, USGS, AeroGRID, IGN, and the GIS User Community'
       }
     );
 
@@ -125,6 +124,16 @@ export class SiteMapEngine {
     // Feature group for drawn boundaries & measurements
     this.drawnItemsGroup = L.featureGroup().addTo(this.map);
 
+    // Responsive container auto-resize observer to prevent 0x0 container size bugs
+    if (typeof ResizeObserver !== 'undefined' && this.container) {
+      this.resizeObserver = new ResizeObserver(() => {
+        if (this.map) {
+          this.map.invalidateSize();
+        }
+      });
+      this.resizeObserver.observe(this.container);
+    }
+
     // Set Initial Marker
     this.updateLocationMarker(startLat, startLng, this.currentSite.locationName);
 
@@ -137,6 +146,11 @@ export class SiteMapEngine {
     this.map.on('click', (e) => this.handleMapClick(e));
     this.map.on('mousemove', (e) => this.handleMapMouseMove(e));
     this.map.on('dblclick', (e) => this.handleMapDblClick(e));
+
+    // Initial size invalidation
+    setTimeout(() => {
+      if (this.map) this.map.invalidateSize();
+    }, 100);
   }
 
   setLayer(layerName) {
@@ -169,9 +183,11 @@ export class SiteMapEngine {
       if (layerName === 'SATELLITE') {
         attrEl.textContent = 'Esri World Imagery (Maxar / Earthstar Geographics / USGS)';
       } else if (layerName === 'TERRAIN') {
-        attrEl.textContent = 'OpenTopoMap (SRTM Digital Elevation Model & Contours)';
+        attrEl.textContent = 'OpenTopoMap / OpenStreetMap (WGS 84)';
+      } else if (layerName === 'EARTH') {
+        attrEl.textContent = 'Google Earth Photorealistic 3D Tiles';
       } else {
-        attrEl.textContent = 'CartoDB Voyager / OpenStreetMap (WGS 84)';
+        attrEl.textContent = 'OpenStreetMap (WGS 84)';
       }
     }
   }
@@ -313,11 +329,19 @@ export class SiteMapEngine {
     this.currentSite.lng = lng;
     this.currentSite.locationName = locationName;
 
-    // Smoothly fly map to coordinates
-    this.map.flyTo([lat, lng], 17, {
-      duration: 1.2,
-      easeLinearity: 0.25
-    });
+    // Reset interim drawing states & clear previous boundary from prior location
+    this.resetDrawingState();
+    this.clearBoundary();
+
+    // Reset site boundary parameters for the new search location
+    this.currentSite.boundaryType = 'NONE';
+    this.currentSite.boundaryGeo = [];
+    this.currentSite.areaSqMeters = 0;
+    this.currentSite.dimensions = null;
+
+    // Centering: Smoothly set map view to exact location at architectural parcel zoom (17)
+    this.map.setView([lat, lng], 17);
+    this.invalidateSize();
 
     this.updateLocationMarker(lat, lng, locationName);
 
@@ -390,12 +414,14 @@ export class SiteMapEngine {
       b.classList.toggle('active', b.dataset.tool === this.currentTool);
     });
 
-    // Update Map Cursor
-    if (this.container) {
+    // Update Map Cursor & Dragging (disable map pan during drawing so user doesn't drag across continents)
+    if (this.container && this.map) {
       if (this.currentTool === 'MEASURE' || this.currentTool === 'RECTANGLE' || this.currentTool === 'POLYLINE') {
         this.container.style.cursor = 'crosshair';
+        this.map.dragging.disable();
       } else {
         this.container.style.cursor = '';
+        this.map.dragging.enable();
       }
     }
 
@@ -438,6 +464,10 @@ export class SiteMapEngine {
     this.polygonPoints = [];
     this.polygonVertexMarkers.forEach(m => this.drawnItemsGroup.removeLayer(m));
     this.polygonVertexMarkers = [];
+
+    if (this.currentTool === 'NONE' && this.map) {
+      this.map.dragging.enable();
+    }
   }
 
   handleMapClick(e) {
@@ -578,7 +608,19 @@ export class SiteMapEngine {
       // Geodesic calculations
       const width = haversineDistance(coords[0], coords[1]);
       const length = haversineDistance(coords[1], coords[2]);
-      const area = width * length;
+      const area = calculateGeodesicPolygonArea(coords);
+
+      // Scale Validation: An architectural site parcel boundary should not exceed 25 km
+      if (width > 25000 || length > 25000) {
+        const hintEl = document.getElementById('sa-map-tool-hint');
+        if (hintEl) {
+          hintEl.innerHTML = `<span style="color: #f87171;">⚠️ Boundary exceeds 25 km (${Math.round(width / 1000)} km × ${Math.round(length / 1000)} km). Please zoom in closer to property level to draft an accurate site boundary.</span>`;
+          hintEl.style.display = 'block';
+        }
+        this.rectStartPoint = null;
+        if (this.map) this.map.dragging.enable();
+        return;
+      }
 
       this.currentSite.boundaryType = 'RECTANGLE';
       this.currentSite.boundaryGeo = coords;
@@ -597,6 +639,7 @@ export class SiteMapEngine {
       }).addTo(this.drawnItemsGroup);
 
       this.rectStartPoint = null;
+      if (this.map) this.map.dragging.enable();
       this.setTool('NONE');
       this.updateInfoPanel();
     }
@@ -660,6 +703,18 @@ export class SiteMapEngine {
     const coords = this.polygonPoints.map(p => ({ lat: p.lat, lng: p.lng }));
     const area = calculateGeodesicPolygonArea(coords);
 
+    // Scale Validation: An architectural polygon boundary should not exceed 500 km²
+    if (area > 500000000) {
+      const hintEl = document.getElementById('sa-map-tool-hint');
+      if (hintEl) {
+        hintEl.innerHTML = `<span style="color: #f87171;">⚠️ Boundary exceeds 500 km². Please zoom in closer to property level.</span>`;
+        hintEl.style.display = 'block';
+      }
+      this.resetDrawingState();
+      if (this.map) this.map.dragging.enable();
+      return;
+    }
+
     // Replace polyline with closed polygon
     if (this.polygonLayer && this.drawnItemsGroup) {
       this.drawnItemsGroup.removeLayer(this.polygonLayer);
@@ -681,6 +736,7 @@ export class SiteMapEngine {
       lengthMetres: Math.round(Math.sqrt(area))
     };
 
+    if (this.map) this.map.dragging.enable();
     this.setTool('NONE');
     this.updateInfoPanel();
   }
@@ -741,20 +797,24 @@ export class SiteMapEngine {
     if (lngEl) lngEl.textContent = `${this.currentSite.lng.toFixed(4)}° ${this.currentSite.lng >= 0 ? 'E' : 'W'}`;
 
     if (areaEl) {
-      const areaFmt = formatArea(this.currentSite.areaSqMeters);
-      areaEl.textContent = `${areaFmt.sqMeters} (${areaFmt.acres})`;
+      if (this.currentSite.areaSqMeters > 0) {
+        const areaFmt = formatArea(this.currentSite.areaSqMeters);
+        areaEl.textContent = `${areaFmt.sqMeters} (${areaFmt.acres})`;
+      } else {
+        areaEl.textContent = 'None Defined (Use Rectangle/Polyline)';
+      }
     }
 
     if (boundEl) {
-      if (this.currentSite.boundaryType === 'RECTANGLE') {
+      if (this.currentSite.boundaryType === 'RECTANGLE' && this.currentSite.dimensions) {
         const w = this.currentSite.dimensions.widthMetres;
         const l = this.currentSite.dimensions.lengthMetres;
         boundEl.textContent = `Rectangle (${w}m × ${l}m)`;
-      } else if (this.currentSite.boundaryType === 'POLYGON') {
+      } else if (this.currentSite.boundaryType === 'POLYGON' && this.currentSite.boundaryGeo) {
         const count = this.currentSite.boundaryGeo.length;
         boundEl.textContent = `Custom Polygon (${count} Vertices)`;
       } else {
-        boundEl.textContent = 'None Defined';
+        boundEl.textContent = 'None Defined (Use Site Tools to Draft)';
       }
     }
 
@@ -945,7 +1005,23 @@ export class SiteMapEngine {
 
   invalidateSize() {
     if (this.map) {
-      setTimeout(() => this.map.invalidateSize(), 50);
+      try {
+        this.map.invalidateSize();
+      } catch (e) {}
+      setTimeout(() => {
+        if (this.map) {
+          try {
+            this.map.invalidateSize();
+          } catch (e) {}
+        }
+      }, 50);
+      setTimeout(() => {
+        if (this.map) {
+          try {
+            this.map.invalidateSize();
+          } catch (e) {}
+        }
+      }, 150);
     }
   }
 }

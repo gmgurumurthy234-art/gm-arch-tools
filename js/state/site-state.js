@@ -198,7 +198,7 @@ class SiteStateManager {
       areaSqFt: 21528,
       coordinateReference: 'WGS 84 (EPSG:4326)',
       importTimestamp: new Date().toISOString(),
-      sourceAttribution: 'GM Architectural Geodesic Engine & CartoDB / Esri'
+      sourceAttribution: 'GM Architectural Geodesic Engine & OpenStreetMap / Esri'
     };
 
     this.loadState();

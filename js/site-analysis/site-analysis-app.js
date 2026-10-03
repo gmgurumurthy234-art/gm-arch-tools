@@ -279,9 +279,18 @@ export function selectAnalysisMode(modeId) {
           selectAnalysisMode('02');
         }
       });
-    } else {
-      mapEngineInstance.invalidateSize();
     }
+
+    // Always trigger resize invalidation on open to prevent 0x0 container bounds
+    requestAnimationFrame(() => {
+      if (mapEngineInstance) mapEngineInstance.invalidateSize();
+    });
+    setTimeout(() => {
+      if (mapEngineInstance) mapEngineInstance.invalidateSize();
+    }, 100);
+    setTimeout(() => {
+      if (mapEngineInstance) mapEngineInstance.invalidateSize();
+    }, 300);
 
     renderActiveModeDetails();
     return;
@@ -418,7 +427,7 @@ function renderActiveModeDetails() {
         <div class="sa-info-block">
           <h4 class="sa-info-heading">DATA SOURCES &amp; LICENSING</h4>
           <div style="font-size: 11px; color: #94a3b8; line-height: 1.5;">
-            <b>Roads &amp; Buildings:</b> OpenStreetMap &amp; CartoDB Voyager<br>
+            <b>Roads &amp; Buildings:</b> OpenStreetMap Standard (WGS 84)<br>
             <b>Satellite Imagery:</b> Esri World Imagery (Maxar/USGS)<br>
             <b>Contours:</b> SRTM Digital Elevation Model via OpenTopoMap<br>
             <b>Google Maps:</b> Official Maps Platform API integration supported.

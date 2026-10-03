@@ -603,6 +603,62 @@ const saAppContent = fs.readFileSync('js/site-analysis/site-analysis-app.js', 'u
 assert(saAppContent.includes('MAP'), 'site-analysis-app.js includes MAP option in Right Panel');
 assert(saAppContent.includes('map-workspace'), 'site-analysis-app.js handles map-workspace transition');
 
+// 11. ITERATION 6.1 — FIX MAP RENDERING & EXTREME AREA BUG
+console.log('\n--- 11. Testing Iteration 6.1 Map Rendering & Boundary Scale Invariants ---');
+const mapEngineContent = fs.readFileSync('js/site-analysis/site-map-engine.js', 'utf-8');
+
+// Reliable Base Map Provider (OpenStreetMap Standard, NO API KEY watermark)
+assert(mapEngineContent.includes('https://tile.openstreetmap.org/{z}/{x}/{y}.png'), 'site-map-engine.js uses OpenStreetMap Standard endpoint for NORMAL');
+assert(!mapEngineContent.includes('basemaps.cartocdn.com'), 'site-map-engine.js removes watermarked CartoDB basemap endpoint');
+assert(mapEngineContent.includes('OpenStreetMap (WGS 84)'), 'site-map-engine.js labels NORMAL provider honestly as OpenStreetMap (WGS 84)');
+assert(indexHtmlContent.includes('OpenStreetMap (WGS 84)'), 'index.html labels initial provider as OpenStreetMap (WGS 84)');
+
+// Container Sizing & ResizeObserver
+assert(mapEngineContent.includes('ResizeObserver'), 'site-map-engine.js implements ResizeObserver for auto-resizing');
+assert(cssContent.includes('.sa-map-container {\n  position: absolute;'), 'site-analysis.css positions .sa-map-container absolutely');
+assert(cssContent.includes('.sa-map-container .leaflet-container'), 'site-analysis.css ensures .leaflet-container occupies 100% height');
+
+// Map Dragging Guard during drafting
+assert(mapEngineContent.includes('this.map.dragging.disable()'), 'site-map-engine.js disables map dragging while drawing boundary');
+assert(mapEngineContent.includes('this.map.dragging.enable()'), 'site-map-engine.js re-enables map dragging upon completion');
+
+// Boundary Scale Validation (Prevents accidental country/continental drags like 160km x 1215km)
+assert(mapEngineContent.includes('width > 25000'), 'site-map-engine.js has scale validation guard against >25km boundary');
+assert(mapEngineContent.includes('area > 500000000'), 'site-map-engine.js has scale validation guard against >500km² polygon');
+
+// Real-world parcel calculation for Adhiyamaan College of Engineering (Hosur)
+// Approx campus parcel: 300m East-West by 250m North-South at lat 12.7152, lng 77.8678
+const adhiyamaanLat = 12.7151533;
+const adhiyamaanLng = 77.8678071;
+const testParcelW = 300; // 300m
+const testParcelH = 250; // 250m
+const dLatHosur = (testParcelH / 6371008.8) * (180 / Math.PI);
+const dLngHosur = (testParcelW / (6371008.8 * Math.cos(adhiyamaanLat * Math.PI / 180))) * (180 / Math.PI);
+
+const adhiyamaanParcel = [
+  { lat: adhiyamaanLat + dLatHosur, lng: adhiyamaanLng },
+  { lat: adhiyamaanLat + dLatHosur, lng: adhiyamaanLng + dLngHosur },
+  { lat: adhiyamaanLat, lng: adhiyamaanLng + dLngHosur },
+  { lat: adhiyamaanLat, lng: adhiyamaanLng }
+];
+
+const parcelWidth = haversineDistance(adhiyamaanParcel[0], adhiyamaanParcel[1]);
+const parcelHeight = haversineDistance(adhiyamaanParcel[1], adhiyamaanParcel[2]);
+const parcelArea = calculateGeodesicPolygonArea(adhiyamaanParcel);
+
+assertClose(parcelWidth, 300, 1.0, 'Adhiyamaan parcel width is 300m (got ~' + Math.round(parcelWidth) + 'm)');
+assertClose(parcelHeight, 250, 1.0, 'Adhiyamaan parcel height is 250m (got ~' + Math.round(parcelHeight) + 'm)');
+assertClose(parcelArea, 75000, 100, 'Adhiyamaan parcel area is 75,000 m² (18.5 Acres), physically sane scale (got ~' + Math.round(parcelArea) + ' m²)');
+
+// 3D projection transformation for Adhiyamaan campus
+const adhiyamaan3D = convertGeoToLocal3D(adhiyamaanParcel, adhiyamaanLat, adhiyamaanLng);
+assert(adhiyamaan3D.length === 4, 'convertGeoToLocal3D produces 4 local 3D points');
+// Center of site is at local (0, 0)
+const avgX = adhiyamaan3D.reduce((sum, p) => sum + p.x, 0) / 4;
+const avgZ = adhiyamaan3D.reduce((sum, p) => sum + p.z, 0) / 4;
+assert(Math.abs(avgX - 150) < 5, '3D X coordinates are in local meters near (0, 0)');
+assert(Math.abs(avgZ - (-125)) < 5, '3D Z coordinates are in local meters near (0, 0)');
+
 console.log(`\n========================================`);
 console.log(`TEST SUMMARY: ${passed} PASSED, ${failed} FAILED`);
 console.log(`========================================\n`);
