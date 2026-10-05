@@ -85,6 +85,19 @@ function syncViewportAndPanels() {
   const activeOption = optionManagerInstance.getActiveOption();
   if (!activeOption) return;
 
+  // Auto-select first mass if available and none currently selected
+  if ((!selectedMassId || !activeOption.masses.find(m => m.id === selectedMassId)) && activeOption.masses.length > 0) {
+    selectedMassId = activeOption.masses[0].id;
+  } else if (activeOption.masses.length === 0) {
+    selectedMassId = null;
+  }
+
+  // Guidance banner: hide when masses exist, show when canvas is empty
+  const banner = document.getElementById('designer-guidance-banner');
+  if (banner) {
+    banner.style.display = activeOption.masses.length === 0 ? 'block' : 'none';
+  }
+
   // 1. Update 3D Viewport
   viewportInstance.renderOption(activeOption, selectedMassId);
 
@@ -96,6 +109,9 @@ function syncViewportAndPanels() {
 
   // 4. Update Infographics
   updateInfographics(activeOption, metrics);
+
+  // 5. Update Selected Mass Property Card
+  updateSelectedMassCard();
 }
 
 function handleDrawingCompleted(massData) {

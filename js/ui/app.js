@@ -13,7 +13,7 @@ import { initAccountManager } from '../auth/account-manager.js';
 import { initWedgeCarousel, setActiveModule } from './wedge-carousel.js';
 import { initSiteAnalysisApp, selectAnalysisMode, pauseSiteAnalysis, resumeSiteAnalysis } from '../site-analysis/site-analysis-app.js?v=6.2.5';
 import { initBasicToolsApp } from '../basic-tools/basic-tools-app.js';
-import { initDesignerApp, pauseDesignerApp, resumeDesignerApp } from '../designer/designer-app.js?v=6.3.0';
+import { initDesignerApp, pauseDesignerApp, resumeDesignerApp } from '../designer/designer-app.js?v=6.3.1';
 
 let currentView = 'HUB'; // 'HUB' | 'CALCULATIVES' | 'DESIGNER' | 'SITE_ANALYSIS' | 'BASIC_TOOLS'
 let activeCategory = 'ALL';

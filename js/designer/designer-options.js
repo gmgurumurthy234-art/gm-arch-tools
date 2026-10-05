@@ -79,9 +79,24 @@ export class DesignerOptionManager {
     }
   }
 
+  createSampleMass() {
+    return {
+      id: 'mass-default-01',
+      name: 'Tower Block A',
+      type: 'RECTANGLE',
+      width: 20,
+      length: 30,
+      floors: 5,
+      floorHeight: 3.2,
+      position: { x: 0, y: 0, z: -1.5 },
+      rotation: 0,
+      color: '#38bdf8'
+    };
+  }
+
   initDefaultOption() {
     const defaultOption = new DesignerOption('opt-1', 'OPTION 1', {
-      masses: [],
+      masses: [this.createSampleMass()],
       parameters: {
         siteArea: 2000,
         siteWidth: 50,
@@ -361,6 +376,10 @@ export class DesignerOptionManager {
           this.options = parsed.options.map(o => new DesignerOption(o.id, o.name, o));
           this.activeOptionId = parsed.activeOptionId || this.options[0].id;
         }
+      }
+      // If user had previous empty state, seed default mass
+      if (this.options.length > 0 && this.options[0].masses.length === 0) {
+        this.options[0].masses = [this.createSampleMass()];
       }
     } catch (e) {
       console.warn('Could not restore Designer options from storage', e);

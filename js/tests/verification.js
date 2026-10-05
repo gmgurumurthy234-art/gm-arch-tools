@@ -737,6 +737,10 @@ const optionMgr = new DesignerOptionManager();
 assert(optionMgr.getAllOptions().length >= 1, 'DesignerOptionManager initializes with at least 1 option');
 const opt1 = optionMgr.getActiveOption();
 assert(opt1 && opt1.name === 'OPTION 1', 'Initial option is OPTION 1');
+assert(opt1 && opt1.masses.length === 1, 'Initial option preloads 1 architectural mass');
+assert(opt1.masses[0].name === 'Tower Block A', 'Preloaded mass name is "Tower Block A"');
+assert(opt1.masses[0].floors === 5, 'Preloaded mass has 5 floors');
+assert(opt1.masses[0].width === 20 && opt1.masses[0].length === 30, 'Preloaded mass has dimensions 20m x 30m (600 m²)');
 
 const opt2 = optionMgr.createOption('OPTION 2');
 assert(optionMgr.getAllOptions().length === 2, 'Adding option increases count to 2');
