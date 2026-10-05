@@ -279,7 +279,8 @@
 }
 
 .portal-view.site-analysis-view.active-view,
-.portal-view.basic-tools-view.active-view {
+.portal-view.basic-tools-view.active-view,
+.portal-view.designer-workspace-view.active-view {
   display: flex !important;
 }
 

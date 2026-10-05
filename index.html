@@ -30,6 +30,7 @@
   <link rel="stylesheet" href="styles/site-analysis.css">
   <link rel="stylesheet" href="styles/basic-tools.css">
   <link rel="stylesheet" href="styles/leaflet.css">
+  <link rel="stylesheet" href="styles/designer.css">
 </head>
 <body>
 
@@ -962,6 +963,389 @@
 
         </section>
 
+        <!-- ============================================================
+             VIEW 5: MODULE 02 — THE DESIGNER WORKSPACE
+             Interactive Architectural 3D Design + Parametric Massing Workspace
+             ============================================================ -->
+        <section id="designer-workspace-view" class="portal-view designer-workspace-view" style="display: none;" aria-label="The Designer Architectural Workspace">
+
+          <!-- Invisible Left Edge-Trigger Hotzone -->
+          <div class="designer-edge-nav-trigger" id="designer-edge-nav-trigger" title="Hover for Navigation Drawer"></div>
+
+          <!-- Drawer Backdrop for Click-Away / Touch -->
+          <div class="designer-drawer-backdrop" id="designer-drawer-backdrop"></div>
+
+          <!-- Edge-Triggered Navigation Drawer Overlay -->
+          <aside class="designer-edge-nav-drawer" id="designer-edge-nav-drawer" aria-label="Designer Platform Navigation">
+            <div class="designer-drawer-brand">
+              <div>
+                <div class="d-brand-title">GM ARCH TOOLS</div>
+                <div class="d-brand-sub">THE DESIGNER · WORKSPACE</div>
+              </div>
+              <button type="button" class="designer-drawer-close" id="designer-drawer-close-btn" title="Close Drawer (Esc)">✕</button>
+            </div>
+
+            <ul class="designer-drawer-menu">
+              <li>
+                <button type="button" class="designer-drawer-link" id="designer-nav-projects">
+                  <span>📁</span>
+                  <span>PROJECTS</span>
+                </button>
+              </li>
+              <li>
+                <button type="button" class="designer-drawer-link highlight" id="designer-nav-module-hub">
+                  <span>🏛️</span>
+                  <span>MODULE HUB (ALL 13)</span>
+                </button>
+              </li>
+            </ul>
+
+            <div class="designer-drawer-account">
+              <span class="d-account-title">ACCOUNT</span>
+              <span class="d-account-email" id="designer-drawer-user-email">guru@example.com</span>
+            </div>
+          </aside>
+
+          <!-- Top Design Options & Viewport Controls Bar -->
+          <header class="designer-top-bar">
+            <div class="designer-top-left">
+              <div class="designer-top-brand">
+                <span class="designer-top-brand-dot"></span>
+                <span>THE DESIGNER</span>
+              </div>
+              <div class="designer-option-tabs" id="designer-option-tabs-container">
+                <!-- Option tabs populated dynamically: OPTION 1, + NEW OPTION -->
+              </div>
+            </div>
+
+            <div class="designer-top-right">
+              <!-- Camera Presets -->
+              <div class="designer-cam-group" role="group" aria-label="Camera Presets">
+                <button type="button" class="designer-view-btn" data-view="FIT" title="Fit Entire Model">FIT</button>
+                <button type="button" class="designer-view-btn" data-view="TOP" title="Top Plan View">TOP</button>
+                <button type="button" class="designer-view-btn" data-view="FRONT" title="Front Elevation">FRONT</button>
+                <button type="button" class="designer-view-btn" data-view="SIDE" title="Side Elevation">SIDE</button>
+                <button type="button" class="designer-view-btn" data-view="ISO" title="Isometric Projection">ISO</button>
+                <button type="button" class="designer-view-btn active" data-view="PERSP" title="Perspective View">PERSP</button>
+              </div>
+
+              <!-- Grid & Axes Toggles -->
+              <button type="button" class="designer-icon-btn active" id="designer-btn-toggle-grid" title="Toggle Architectural Grid">GRID</button>
+              <button type="button" class="designer-icon-btn active" id="designer-btn-toggle-axes" title="Toggle XYZ Axes">AXES</button>
+
+              <!-- Layers Dropdown -->
+              <div class="designer-layers-wrap">
+                <button type="button" class="designer-icon-btn" id="designer-btn-layers" title="Layer Visibility">LAYERS ▾</button>
+                <div class="designer-layers-dropdown" id="designer-layers-dropdown">
+                  <label class="d-layer-item"><input type="checkbox" data-layer="site" checked> Site Boundary</label>
+                  <label class="d-layer-item"><input type="checkbox" data-layer="setbacks" checked> Setbacks Zone</label>
+                  <label class="d-layer-item"><input type="checkbox" data-layer="massing" checked> Building Massing</label>
+                  <label class="d-layer-item"><input type="checkbox" data-layer="measurements" checked> Measurements</label>
+                  <label class="d-layer-item"><input type="checkbox" data-layer="grid" checked> Grid &amp; Axes</label>
+                </div>
+              </div>
+
+              <!-- Presentation Mode Toggle -->
+              <button type="button" class="designer-icon-btn" id="designer-btn-presentation" title="Enter Clean Presentation Mode">PRESENTATION</button>
+            </div>
+          </header>
+
+          <!-- Main 3-Column Workspace Stage -->
+          <div class="designer-workspace-stage">
+
+            <!-- Left Column: 10 Design Modes -->
+            <aside class="designer-left-modes-panel" aria-label="Designer Modes">
+              <div class="designer-modes-header">
+                <span>DESIGN MODES</span>
+                <span style="color: var(--d-accent-cyan);">01 / 10</span>
+              </div>
+              <ul class="designer-modes-list" id="designer-modes-list">
+                <!-- Populated dynamically: 01 MASSING (ACTIVE), 02-10 COMING SOON -->
+              </ul>
+            </aside>
+
+            <!-- Floating Vertical Modelling Toolbar -->
+            <div class="designer-modelling-toolbar" id="designer-modelling-toolbar" role="toolbar" aria-label="Modelling Tools">
+              <button type="button" class="designer-tool-btn active" data-tool="SELECT" title="Select / Inspect Mass">↖</button>
+              <div class="designer-tool-sep"></div>
+              <button type="button" class="designer-tool-btn" data-tool="POLYLINE" title="Polyline Footprint (Point-by-point)">☡</button>
+              <button type="button" class="designer-tool-btn" data-tool="RECTANGLE" title="Rectangle Footprint (2 Corners)">▭</button>
+              <button type="button" class="designer-tool-btn" data-tool="CIRCLE" title="Circle Footprint (Center &amp; Radius)">○</button>
+              <button type="button" class="designer-tool-btn" data-tool="POLYGON" title="Regular Polygon Footprint">⬡</button>
+              <div class="designer-tool-sep"></div>
+              <button type="button" class="designer-tool-btn" data-tool="MEASURE" title="3D Distance Measurement">📏</button>
+              <button type="button" class="designer-tool-btn" data-tool="DIVIDE" title="Divide / Cut Selected Mass">✂</button>
+              <div class="designer-tool-sep"></div>
+              <button type="button" class="designer-tool-btn" data-tool="DUPLICATE" title="Duplicate Selected Mass">⧉</button>
+              <button type="button" class="designer-tool-btn" data-tool="DELETE" title="Delete Selected Mass (Del)">🗑</button>
+              <div class="designer-tool-sep"></div>
+              <button type="button" class="designer-tool-btn" data-tool="UNDO" title="Undo (Ctrl+Z)">↶</button>
+              <button type="button" class="designer-tool-btn" data-tool="REDO" title="Redo (Ctrl+Y)">↷</button>
+            </div>
+
+            <!-- Center Column: 3D Architectural Viewport -->
+            <main class="designer-center-viewport" aria-label="3D Design Viewport">
+              <div class="designer-canvas-wrap" id="designer-viewport-canvas-wrap"></div>
+
+              <!-- First-Time Guidance Banner -->
+              <div class="designer-guidance-banner" id="designer-guidance-banner">
+                <div class="d-guide-title">START DESIGNING</div>
+                <div class="d-guide-sub">Select <b>Rectangle</b>, <b>Polyline</b>, <b>Circle</b> or <b>Polygon</b> from the left toolbar to draw your first conceptual building mass on the architectural grid.</div>
+              </div>
+
+              <!-- Active Tool Prompt HUD -->
+              <div class="designer-active-prompt" id="designer-active-tool-prompt">SELECT: Click a building mass to edit properties.</div>
+
+              <!-- Measure Result HUD -->
+              <div class="designer-measure-badge" id="designer-measure-result-badge"></div>
+
+              <!-- North Gyro Compass Widget -->
+              <div class="designer-north-widget" title="True North Orientation">
+                <div class="north-arrow"></div>
+                <span>N</span>
+              </div>
+
+              <!-- Exit Presentation Mode Button -->
+              <button type="button" class="designer-exit-presentation-btn" id="designer-exit-presentation-btn">
+                <span>✕</span> <span>EXIT PRESENTATION (ESC)</span>
+              </button>
+            </main>
+
+            <!-- Right Column: Contextual Feature & Parameter Panel -->
+            <aside class="designer-right-panel" aria-label="Contextual Parameter Panel">
+              <div class="designer-panel-header">
+                <span class="designer-panel-title" id="designer-panel-context-title">MASSING PARAMETERS</span>
+                <span class="d-param-tag">MODE 01</span>
+              </div>
+
+              <div class="designer-panel-body">
+
+                <!-- Selected Mass Property Card -->
+                <div class="designer-selected-card" id="designer-selected-mass-card">
+                  <div class="d-sel-header">
+                    <span class="d-sel-title" id="d-sel-mass-name">Mass 1</span>
+                    <button type="button" class="d-sel-delete-btn" id="d-btn-delete-selected-mass">Delete</button>
+                  </div>
+                  <div style="font-family: var(--d-font-mono); font-size: 10px; color: var(--d-text-muted);" id="d-sel-mass-type">RECTANGLE</div>
+                  <div style="font-family: var(--d-font-mono); font-size: 11px; color: #ffffff; margin-top: 4px;" id="d-sel-mass-dim">20m × 30m</div>
+                </div>
+
+                <!-- SECTION A: SITE LOCATION -->
+                <div class="d-param-section">
+                  <div class="d-param-section-title">
+                    <span>A. SITE LOCATION</span>
+                    <span class="d-param-tag">WGS 84</span>
+                  </div>
+                  <div class="d-param-row">
+                    <div class="d-param-field">
+                      <label class="d-param-label" for="d-param-lat">LATITUDE</label>
+                      <input type="number" step="0.0001" class="d-param-input" id="d-param-lat" value="12.9716">
+                    </div>
+                    <div class="d-param-field">
+                      <label class="d-param-label" for="d-param-lng">LONGITUDE</label>
+                      <input type="number" step="0.0001" class="d-param-input" id="d-param-lng" value="77.5946">
+                    </div>
+                  </div>
+                  <button type="button" class="d-btn-import-coords" id="d-btn-import-site-coords">
+                    SYNC FROM SITE ANALYSIS MODULE
+                  </button>
+                  <p style="font-family: var(--d-font-mono); font-size: 9px; color: var(--d-text-faint); margin: 0; line-height: 1.4;">
+                    Coordinates represent geographic location. Statutory planning regulations must be confirmed with local authorities.
+                  </p>
+                </div>
+
+                <!-- SECTION B: DEVELOPMENT CONTROLS -->
+                <div class="d-param-section">
+                  <div class="d-param-section-title">
+                    <span>B. DEVELOPMENT CONTROLS</span>
+                    <span class="d-param-tag">INPUT ASSUMPTIONS</span>
+                  </div>
+                  <div class="d-param-row">
+                    <div class="d-param-field">
+                      <label class="d-param-label" for="d-param-fsi">DESIGN FSI</label>
+                      <input type="number" step="0.1" min="0.1" class="d-param-input" id="d-param-fsi" value="2.0">
+                    </div>
+                    <div class="d-param-field">
+                      <label class="d-param-label" for="d-param-far">DESIGN FAR</label>
+                      <input type="number" step="0.1" min="0.1" class="d-param-input" id="d-param-far" value="2.0">
+                    </div>
+                  </div>
+                  <div class="d-param-field">
+                    <label class="d-param-label" for="d-param-site-area">SITE AREA (m²)</label>
+                    <input type="number" step="50" min="100" class="d-param-input" id="d-param-site-area" value="2000">
+                  </div>
+                  <div class="d-metric-block">
+                    <span class="d-metric-title">Permissible FSI Floor Area</span>
+                    <span class="d-metric-val cyan" id="d-val-permissible-fsi-area">4,000 m²</span>
+                  </div>
+                </div>
+
+                <!-- SECTION C: BUILDING HEIGHT & FLOORS -->
+                <div class="d-param-section">
+                  <div class="d-param-section-title">
+                    <span>C. BUILDING HEIGHT</span>
+                    <span class="d-param-tag">LIVE 3D</span>
+                  </div>
+                  <div class="d-param-field">
+                    <label class="d-param-label">NUMBER OF FLOORS</label>
+                    <div class="d-stepper-wrap">
+                      <button type="button" class="d-stepper-btn" id="d-btn-floor-dec" title="Decrease Floors">−</button>
+                      <input type="number" min="1" max="100" class="d-param-input d-stepper-input" id="d-param-floors" value="5">
+                      <button type="button" class="d-stepper-btn" id="d-btn-floor-inc" title="Increase Floors">+</button>
+                    </div>
+                  </div>
+                  <div class="d-param-field">
+                    <label class="d-param-label">FLOOR-TO-FLOOR HEIGHT (m)</label>
+                    <div class="d-slider-wrap">
+                      <input type="range" min="2.4" max="6.0" step="0.1" value="3.2" id="d-param-floor-height-slider">
+                      <input type="number" min="2.4" max="6.0" step="0.1" value="3.2" class="d-param-input d-slider-val" id="d-param-floor-height-num">
+                    </div>
+                  </div>
+                  <div class="d-metric-block">
+                    <span class="d-metric-title">Total Building Height (N × h)</span>
+                    <span class="d-metric-val cyan" id="d-val-total-height">16.0 m</span>
+                  </div>
+                </div>
+
+                <!-- SECTION D: COVERAGE -->
+                <div class="d-param-section">
+                  <div class="d-param-section-title">
+                    <span>D. GROUND COVERAGE</span>
+                    <span class="d-param-tag">LIVE</span>
+                  </div>
+                  <div class="d-metric-block">
+                    <span class="d-metric-title">Building Footprint</span>
+                    <span class="d-metric-val" id="d-val-footprint-area">0 m²</span>
+                  </div>
+                  <div class="d-metric-block">
+                    <span class="d-metric-title">Ground Coverage %</span>
+                    <span class="d-metric-val cyan" id="d-val-ground-coverage">0.0%</span>
+                  </div>
+                  <div class="d-warning-badge" id="d-coverage-warning-badge"></div>
+                </div>
+
+                <!-- SECTION E: SETBACKS -->
+                <div class="d-param-section">
+                  <div class="d-param-section-title">
+                    <span>E. SETBACKS</span>
+                    <span class="d-param-tag">DESIGN / INPUT</span>
+                  </div>
+                  <div class="d-param-row">
+                    <div class="d-param-field">
+                      <label class="d-param-label" for="d-param-sb-front">FRONT (m)</label>
+                      <input type="number" min="0" step="0.5" class="d-param-input" id="d-param-sb-front" value="6.0">
+                    </div>
+                    <div class="d-param-field">
+                      <label class="d-param-label" for="d-param-sb-rear">REAR (m)</label>
+                      <input type="number" min="0" step="0.5" class="d-param-input" id="d-param-sb-rear" value="3.0">
+                    </div>
+                  </div>
+                  <div class="d-param-row">
+                    <div class="d-param-field">
+                      <label class="d-param-label" for="d-param-sb-left">LEFT (m)</label>
+                      <input type="number" min="0" step="0.5" class="d-param-input" id="d-param-sb-left" value="3.0">
+                    </div>
+                    <div class="d-param-field">
+                      <label class="d-param-label" for="d-param-sb-right">RIGHT (m)</label>
+                      <input type="number" min="0" step="0.5" class="d-param-input" id="d-param-sb-right" value="3.0">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- SECTION F: LIVE AREA / DESIGN INFORMATION -->
+                <div class="d-param-section">
+                  <div class="d-param-section-title">
+                    <span>F. LIVE DESIGN INFORMATION</span>
+                    <span class="d-param-tag">TELEMETRY</span>
+                  </div>
+                  <div class="d-param-row">
+                    <div class="d-metric-block">
+                      <span class="d-metric-title">Built-up Area</span>
+                      <span class="d-metric-val" id="d-metric-built-up-area">0 m²</span>
+                    </div>
+                    <div class="d-metric-block">
+                      <span class="d-metric-title">Current FSI</span>
+                      <span class="d-metric-val cyan" id="d-metric-current-fsi">0.00</span>
+                    </div>
+                  </div>
+                  <div class="d-param-row">
+                    <div class="d-metric-block">
+                      <span class="d-metric-title">Coverage</span>
+                      <span class="d-metric-val" id="d-metric-coverage">0.0%</span>
+                    </div>
+                    <div class="d-metric-block">
+                      <span class="d-metric-title">Mass Count</span>
+                      <span class="d-metric-val" id="d-metric-mass-count">0</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- SECTION G: INFOGRAPHICS -->
+                <div class="d-param-section" style="border-bottom: none;">
+                  <div class="d-param-section-title">
+                    <span>G. ANALYTICAL INFOGRAPHICS</span>
+                    <span class="d-param-tag">DASHBOARD</span>
+                  </div>
+
+                  <!-- FSI Gauge -->
+                  <div class="d-fsi-bar-wrap">
+                    <div class="d-fsi-bar-labels">
+                      <span>FSI CAPACITY</span>
+                      <span id="d-info-fsi-pct" style="color: var(--d-accent-cyan); font-weight: 700;">0% USED</span>
+                    </div>
+                    <div class="d-fsi-bar-track">
+                      <div class="d-fsi-bar-fill" id="d-info-fsi-fill"></div>
+                    </div>
+                  </div>
+
+                  <!-- Vertical Height Scale -->
+                  <div class="d-height-chart">
+                    <div class="d-height-bar-container">
+                      <div class="d-height-bar" id="d-info-height-bar"></div>
+                    </div>
+                    <div class="d-height-meta">
+                      <span class="d-height-val" id="d-info-height-val">0.0 m</span>
+                      <span class="d-height-sub">MAX MASSING ELEVATION</span>
+                    </div>
+                  </div>
+
+                  <!-- Floor Stack Levels -->
+                  <div class="d-floor-stack-wrap" id="d-info-floor-stack-list">
+                    <!-- Populated dynamically -->
+                  </div>
+                </div>
+
+              </div>
+            </aside>
+
+          </div>
+
+          <!-- Toast HUD -->
+          <div class="designer-toast" id="designer-toast-hud"></div>
+
+          <!-- Projects Modal -->
+          <div class="designer-modal-backdrop" id="designer-projects-modal" role="dialog" aria-modal="true" aria-label="Projects">
+            <div class="designer-modal-panel">
+              <div class="designer-modal-header">
+                <span class="d-brand-title">DESIGNER PROJECTS</span>
+                <button type="button" class="designer-drawer-close" onclick="document.getElementById('designer-projects-modal').style.display='none'">✕</button>
+              </div>
+              <div class="designer-modal-body">
+                <p>Projects are automatically persisted in your active session and local storage cache.</p>
+                <div class="d-metric-block">
+                  <span class="d-metric-title">Active Project Workspace</span>
+                  <span class="d-metric-val cyan">GM Architecture Studio 01</span>
+                </div>
+                <div class="d-metric-block">
+                  <span class="d-metric-title">Storage Architecture</span>
+                  <span class="d-metric-val">Indexed Local Persistence (v1)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </section>
+
       </div>
     </div>
 
@@ -1164,7 +1548,7 @@
 
   <!-- Application Bootstrap -->
   <script type="module">
-    import { initApp } from './js/ui/app.js?v=6.2.5';
+    import { initApp } from './js/ui/app.js?v=6.3.0';
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => {
         initApp();

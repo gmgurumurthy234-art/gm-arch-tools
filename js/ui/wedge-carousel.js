@@ -18,6 +18,7 @@ let dotsContainer = null;
 let counterElement = null;
 
 let onOpenCalculativesCb = null;
+let onOpenDesignerCb = null;
 let onOpenSiteAnalysisCb = null;
 let onOpenBasicToolsCb = null;
 let onOpenRoadmapCb = null;
@@ -31,8 +32,9 @@ let animationId = null;
 let hasDragged = false;
 let isWheelCooldown = false;
 
-export function initWedgeCarousel({ onOpenCalculatives, onOpenSiteAnalysis, onOpenBasicTools, onOpenRoadmap } = {}) {
+export function initWedgeCarousel({ onOpenCalculatives, onOpenDesigner, onOpenSiteAnalysis, onOpenBasicTools, onOpenRoadmap } = {}) {
   onOpenCalculativesCb = onOpenCalculatives;
+  onOpenDesignerCb = onOpenDesigner;
   onOpenSiteAnalysisCb = onOpenSiteAnalysis;
   onOpenBasicToolsCb = onOpenBasicTools;
   onOpenRoadmapCb = onOpenRoadmap;
@@ -150,6 +152,14 @@ function getModuleSpecChips(mod) {
       <span class="wedge-spec-chip">FSI & Coverage</span>
       <span class="wedge-spec-chip">Parking & Setbacks</span>
       <span class="wedge-spec-chip">RERA Carpet Area</span>
+    `;
+  }
+  if (mod.id === '02') {
+    return `
+      <span class="wedge-spec-chip"><span class="chip-val">3D</span> Parametric Massing</span>
+      <span class="wedge-spec-chip">Interactive Viewport</span>
+      <span class="wedge-spec-chip">Parametric Setbacks</span>
+      <span class="wedge-spec-chip">Real-time FSI & Infographics</span>
     `;
   }
   if (mod.id === '03') {
@@ -341,6 +351,8 @@ function triggerOpenActive() {
 
   if (mod.id === '01') {
     if (onOpenCalculativesCb) onOpenCalculativesCb();
+  } else if (mod.id === '02') {
+    if (onOpenDesignerCb) onOpenDesignerCb();
   } else if (mod.id === '03') {
     if (onOpenSiteAnalysisCb) onOpenSiteAnalysisCb();
   } else {

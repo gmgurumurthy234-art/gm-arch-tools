@@ -44,13 +44,13 @@ export const PLATFORM_MODULES = [
     num: "02",
     name: "THE DESIGNER",
     shortName: "Designer",
-    tagline: "Form, Geometry & Synthesis",
+    tagline: "Interactive 3D Architectural Workspace & Massing",
     category: "Architectural Design Tools",
-    status: MODULE_STATUS.COMING_SOON,
-    description: "Architectural form synthesis suite for parametric massing, proportion systems (Golden Ratio, Le Corbusier Modulor), column grid layouts, and spatial composition tools.",
+    status: MODULE_STATUS.ACTIVE,
+    description: "Interactive architectural 3D design and parametric massing workspace featuring real-time floor extrusion, developmental controls (FSI/FAR), setback boundary envelopes, and live architectural infographics.",
     icon: "✏️",
     route: "the-designer",
-    toolsCount: 0,
+    toolsCount: 1,
     tools: []
   },
   {

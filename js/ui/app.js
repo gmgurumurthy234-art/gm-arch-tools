@@ -13,8 +13,9 @@ import { initAccountManager } from '../auth/account-manager.js';
 import { initWedgeCarousel, setActiveModule } from './wedge-carousel.js';
 import { initSiteAnalysisApp, selectAnalysisMode, pauseSiteAnalysis, resumeSiteAnalysis } from '../site-analysis/site-analysis-app.js?v=6.2.5';
 import { initBasicToolsApp } from '../basic-tools/basic-tools-app.js';
+import { initDesignerApp, pauseDesignerApp, resumeDesignerApp } from '../designer/designer-app.js?v=6.3.0';
 
-let currentView = 'HUB'; // 'HUB' | 'CALCULATIVES' | 'SITE_ANALYSIS' | 'BASIC_TOOLS'
+let currentView = 'HUB'; // 'HUB' | 'CALCULATIVES' | 'DESIGNER' | 'SITE_ANALYSIS' | 'BASIC_TOOLS'
 let activeCategory = 'ALL';
 let searchResults = [];
 let selectedSearchIndex = -1;
@@ -36,6 +37,7 @@ export function initApp() {
   window.gmArchToolsRouter = {
     showPlatformHub: (updateHash, viewMode) => showPlatformHub(updateHash, viewMode),
     showArchCalculatives: (updateHash) => showArchCalculatives(updateHash),
+    showTheDesigner: (updateHash) => showTheDesigner(updateHash),
     showSiteAnalysis: (updateHash) => showSiteAnalysis(updateHash),
     showBasicTools: (updateHash) => showBasicTools(updateHash),
     openRoadmapModal: (mod) => openRoadmapModal(mod),
@@ -48,6 +50,7 @@ export function initApp() {
   // 4. Initialize Horizontal Module Wedge Carousel
   initWedgeCarousel({
     onOpenCalculatives: () => showArchCalculatives(),
+    onOpenDesigner: () => showTheDesigner(),
     onOpenSiteAnalysis: () => showSiteAnalysis(),
     onOpenBasicTools: () => showBasicTools(),
     onOpenRoadmap: (mod) => openRoadmapModal(mod)
@@ -79,12 +82,15 @@ export function showPlatformHub(updateHash = true, viewMode = 'wedges') {
   currentView = 'HUB';
   document.body.classList.remove('site-analysis-active');
   document.body.classList.remove('basic-tools-active');
+  document.body.classList.remove('designer-active');
   pauseSiteAnalysis();
+  pauseDesignerApp();
 
   const hubView = document.getElementById('platform-modules-view');
   const calcView = document.getElementById('arch-calculatives-view');
   const saView = document.getElementById('site-analysis-view');
   const btView = document.getElementById('basic-tools-view');
+  const desView = document.getElementById('designer-workspace-view');
   const wedgeContainer = document.getElementById('wedge-portal-container');
   const gridContainer = document.getElementById('modules-grid');
   const btnWedges = document.getElementById('toggle-view-wedges');
@@ -105,6 +111,10 @@ export function showPlatformHub(updateHash = true, viewMode = 'wedges') {
   if (btView) {
     btView.classList.remove('active-view');
     btView.style.display = 'none';
+  }
+  if (desView) {
+    desView.classList.remove('active-view');
+    desView.style.display = 'none';
   }
 
   if (viewMode === 'grid') {
@@ -137,12 +147,15 @@ export function showArchCalculatives(updateHash = true) {
   document.body.classList.remove('home-portal-active');
   document.body.classList.remove('site-analysis-active');
   document.body.classList.remove('basic-tools-active');
+  document.body.classList.remove('designer-active');
   pauseSiteAnalysis();
+  pauseDesignerApp();
 
   const hubView = document.getElementById('platform-modules-view');
   const calcView = document.getElementById('arch-calculatives-view');
   const saView = document.getElementById('site-analysis-view');
   const btView = document.getElementById('basic-tools-view');
+  const desView = document.getElementById('designer-workspace-view');
 
   if (hubView) {
     hubView.classList.remove('active-view');
@@ -160,6 +173,10 @@ export function showArchCalculatives(updateHash = true) {
     btView.classList.remove('active-view');
     btView.style.display = 'none';
   }
+  if (desView) {
+    desView.classList.remove('active-view');
+    desView.style.display = 'none';
+  }
 
   setSidebarActive('all-modules');
   updateBreadcrumbs(['GM ARCH TOOLS', 'ARCH CALCULATIVES']);
@@ -171,16 +188,69 @@ export function showArchCalculatives(updateHash = true) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+export function showTheDesigner(updateHash = true) {
+  currentView = 'DESIGNER';
+  document.body.classList.remove('home-portal-active');
+  document.body.classList.remove('site-analysis-active');
+  document.body.classList.remove('basic-tools-active');
+  pauseSiteAnalysis();
+  document.body.classList.add('designer-active');
+
+  const hubView = document.getElementById('platform-modules-view');
+  const calcView = document.getElementById('arch-calculatives-view');
+  const saView = document.getElementById('site-analysis-view');
+  const btView = document.getElementById('basic-tools-view');
+  const desView = document.getElementById('designer-workspace-view');
+
+  if (hubView) {
+    hubView.classList.remove('active-view');
+    hubView.style.display = 'none';
+  }
+  if (calcView) {
+    calcView.classList.remove('active-view');
+    calcView.style.display = 'none';
+  }
+  if (saView) {
+    saView.classList.remove('active-view');
+    saView.style.display = 'none';
+  }
+  if (btView) {
+    btView.classList.remove('active-view');
+    btView.style.display = 'none';
+  }
+  if (desView) {
+    desView.classList.add('active-view');
+    desView.style.display = 'flex';
+  }
+
+  setSidebarActive('all-modules');
+  updateBreadcrumbs(['GM ARCH TOOLS', 'THE DESIGNER']);
+
+  if (updateHash && window.location.hash !== '#the-designer') {
+    history.pushState(null, '', '#the-designer');
+  }
+
+  setTimeout(() => {
+    initDesignerApp();
+    resumeDesignerApp();
+  }, 40);
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 export function showSiteAnalysis(updateHash = true) {
   currentView = 'SITE_ANALYSIS';
   document.body.classList.remove('home-portal-active');
   document.body.classList.remove('basic-tools-active');
+  document.body.classList.remove('designer-active');
+  pauseDesignerApp();
   document.body.classList.add('site-analysis-active');
 
   const hubView = document.getElementById('platform-modules-view');
   const calcView = document.getElementById('arch-calculatives-view');
   const saView = document.getElementById('site-analysis-view');
   const btView = document.getElementById('basic-tools-view');
+  const desView = document.getElementById('designer-workspace-view');
 
   if (hubView) {
     hubView.classList.remove('active-view');
@@ -197,6 +267,10 @@ export function showSiteAnalysis(updateHash = true) {
   if (btView) {
     btView.classList.remove('active-view');
     btView.style.display = 'none';
+  }
+  if (desView) {
+    desView.classList.remove('active-view');
+    desView.style.display = 'none';
   }
 
   setSidebarActive('all-modules');
@@ -218,13 +292,16 @@ export function showBasicTools(updateHash = true) {
   currentView = 'BASIC_TOOLS';
   document.body.classList.remove('home-portal-active');
   document.body.classList.remove('site-analysis-active');
+  document.body.classList.remove('designer-active');
   pauseSiteAnalysis();
+  pauseDesignerApp();
   document.body.classList.add('basic-tools-active');
 
   const hubView = document.getElementById('platform-modules-view');
   const calcView = document.getElementById('arch-calculatives-view');
   const saView = document.getElementById('site-analysis-view');
   const btView = document.getElementById('basic-tools-view');
+  const desView = document.getElementById('designer-workspace-view');
 
   if (hubView) {
     hubView.classList.remove('active-view');
@@ -241,6 +318,10 @@ export function showBasicTools(updateHash = true) {
   if (btView) {
     btView.classList.add('active-view');
     btView.style.display = 'flex';
+  }
+  if (desView) {
+    desView.classList.remove('active-view');
+    desView.style.display = 'none';
   }
 
   setSidebarActive('all-modules');
@@ -277,6 +358,8 @@ function updateBreadcrumbs(pathArray) {
       clickAttr = 'data-nav="hub"';
     } else if (idx === 1 && crumb === 'ARCH CALCULATIVES') {
       clickAttr = 'data-nav="calculatives"';
+    } else if (idx === 1 && crumb === 'THE DESIGNER') {
+      clickAttr = 'data-nav="the-designer"';
     } else if (idx === 1 && crumb === 'SITE ANALYSIS') {
       clickAttr = 'data-nav="site-analysis"';
     } else if (idx === 1 && crumb === 'BASIC TOOLS') {
@@ -307,6 +390,14 @@ function updateBreadcrumbs(pathArray) {
     calcLink.addEventListener('click', (e) => {
       e.preventDefault();
       showArchCalculatives();
+    });
+  }
+
+  const desLink = container.querySelector('[data-nav="the-designer"]');
+  if (desLink) {
+    desLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      showTheDesigner();
     });
   }
 
@@ -435,6 +526,8 @@ function checkUrlHash() {
     if (tool) {
       updateBreadcrumbs(['GM ARCH TOOLS', 'ARCH CALCULATIVES', `${tool.id} — ${tool.name.toUpperCase()}`]);
     }
+  } else if (hash === '#the-designer' || hash === '#designer' || hash === '#module-02') {
+    showTheDesigner(false);
   } else if (hash === '#site-analysis' || hash === '#module-03') {
     showSiteAnalysis(false);
   } else if (hash === '#site-analysis-maps') {
@@ -501,6 +594,8 @@ function renderModulesGrid() {
 
       if (modId === '01') {
         showArchCalculatives();
+      } else if (modId === '02') {
+        showTheDesigner();
       } else if (modId === '03') {
         showSiteAnalysis();
       } else if (mod) {
